@@ -27,7 +27,7 @@ import (
 
 var Namespace = cli.Command{
 	Name:        "namespace",
-	Usage:       "create|delete|tag|show|list",
+	Usage:       "create, delete, tag, show, list",
 	Description: `Create, delete, tag, show and list namespaces`,
 	Subcommands: []cli.Command{
 		{
