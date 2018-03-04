@@ -13,4 +13,4 @@ script:
 after_success:
   - git config --global user.name "Deployer" && git config --global user.email foo@bar.com
   - go get github.com/tcnksm/ghr
-  - ghr -u MottainaiCI -r mottainai-agent --replace --debug $TRAVIS_TAG release/
+  - ghr -u MottainaiCI -r mottainai-cli --replace --debug $TRAVIS_TAG release/
