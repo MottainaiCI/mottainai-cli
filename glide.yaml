@@ -1,0 +1,13 @@
+package: .
+import:
+- package: github.com/MottainaiCI/mottainai-cli
+  subpackages:
+  - cmd
+- package: github.com/MottainaiCI/mottainai-server
+  subpackages:
+  - pkg/agentconn
+  - pkg/client
+  - pkg/settings
+  - pkg/tasks
+  - pkg/utils
+- package: github.com/urfave/cli
