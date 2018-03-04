@@ -46,7 +46,7 @@ var Task = cli.Command{
 				StringFlag("file, f", "whatever.json", "Read option file"),
 				StringFlag("source, s", "https://github.com/foo/bar.git", "Repository url"),
 				StringFlag("directory, d", "/test, /example", "Directory inside repository url"),
-				StringFlag("entrypoint, e", "/foo/bar", "Entrypoint script"),
+				StringFlag("script", "/foo/bar", "Entrypoint script"),
 				StringFlag("task, t", "docker_execute", "Task name"),
 				StringFlag("image, i", "whatever/foo", "Image used from the task"),
 				StringFlag("namespace, n", "test", "Specify a namespace the task will be started on"),
