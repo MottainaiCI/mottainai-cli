@@ -37,6 +37,7 @@ func main() {
 		cmd.Task,
 		cmd.Node,
 		cmd.Namespace,
+		cmd.Storage,
 	}
 	app.Flags = []cli.Flag{
 		cmd.StringFlag("master, m", "http://localhost:8080", "MottainaiCI webui url"),

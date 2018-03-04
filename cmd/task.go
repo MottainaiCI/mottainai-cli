@@ -48,6 +48,7 @@ var Task = cli.Command{
 				StringFlag("directory, d", "/test, /example", "Directory inside repository url"),
 				StringFlag("script", "/foo/bar", "Entrypoint script"),
 				StringFlag("task, t", "docker_execute", "Task name"),
+				StringFlag("storage", "my_storage_id", "Task name"),
 				StringFlag("image, i", "whatever/foo", "Image used from the task"),
 				StringFlag("namespace, n", "test", "Specify a namespace the task will be started on"),
 			},
