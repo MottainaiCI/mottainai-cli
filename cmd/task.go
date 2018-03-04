@@ -132,7 +132,7 @@ var Task = cli.Command{
 				fetcher := NewClient(host)
 				task := c.Args().First()
 
-				res, err := fetcher.GetOptions("/api/tasks/stop"+task, map[string]string{})
+				res, err := fetcher.GetOptions("/api/tasks/stop/"+task, map[string]string{})
 				if err != nil {
 					return err
 				}
