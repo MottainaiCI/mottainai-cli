@@ -8,6 +8,7 @@ import:
   - pkg/agentconn
   - pkg/client
   - pkg/settings
+  - pkg/storage
   - pkg/tasks
   - pkg/utils
 - package: github.com/urfave/cli
