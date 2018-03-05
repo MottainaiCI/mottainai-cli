@@ -51,6 +51,8 @@ var Task = cli.Command{
 				StringFlag("storage", "my_storage_id", "Task name"),
 				StringFlag("image, i", "whatever/foo", "Image used from the task"),
 				StringFlag("namespace, n", "test", "Specify a namespace the task will be started on"),
+				StringFlag("storage_path, sp", "storage", "Specify the storage path in the task"),
+				StringFlag("artefact_path, ap", "artefacts", "Specify the artefact path in the task"),
 			},
 			Action: func(c *cli.Context) error {
 				host := c.GlobalString("master")
