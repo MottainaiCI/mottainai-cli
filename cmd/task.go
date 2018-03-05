@@ -34,7 +34,7 @@ import (
 
 var Task = cli.Command{
 	Name:        "task",
-	Usage:       "create, remove, stop, start, show, list, attach, artefacts",
+	Usage:       "create, remove, stop, start, show, list, attach, artefacts, download",
 	Description: `Task interface`,
 	//Action:      runTask,
 	Subcommands: []cli.Command{
@@ -238,6 +238,20 @@ var Task = cli.Command{
 				for _, i := range tlist {
 					fmt.Println(strconv.Itoa(i.ID) + " " + i.Status)
 				}
+				return nil
+			},
+		},
+		{
+			Name:  "download",
+			Usage: "<taskid> <target>",
+			Action: func(c *cli.Context) error {
+				host := c.GlobalString("master")
+				fetcher := NewClient(host)
+				id := c.Args().First()
+				target := c.Args().Get(1)
+
+				fetcher.DownloadArtefactsFromTask(id, target)
+
 				return nil
 			},
 		},
