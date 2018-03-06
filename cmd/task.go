@@ -27,6 +27,7 @@ import (
 	"time"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
 
 	"github.com/urfave/cli"
@@ -34,7 +35,7 @@ import (
 
 var Task = cli.Command{
 	Name:        "task",
-	Usage:       "create, remove, stop, start, show, list, attach, artefacts, download",
+	Usage:       "create, remove, stop, start, show, list, attach, artefacts, download, execute",
 	Description: `Task interface`,
 	//Action:      runTask,
 	Subcommands: []cli.Command{
@@ -251,6 +252,29 @@ var Task = cli.Command{
 				target := c.Args().Get(1)
 
 				fetcher.DownloadArtefactsFromTask(id, target)
+
+				return nil
+			},
+		},
+		{
+			Name:  "execute",
+			Usage: "<taskid>",
+			Action: func(c *cli.Context) error {
+				host := c.GlobalString("master")
+				fetcher := NewClient(host)
+				id := c.Args().First()
+
+				var t citasks.Task
+				err := fetcher.GetJSONOptions("/api/tasks/"+id, map[string]string{}, &t)
+				if err != nil {
+					fmt.Println(err.Error())
+					return err
+				}
+
+				fn := citasks.DefaultTaskHandler().Handler(t.TaskName)
+				setting.GenDefault()
+				setting.Configuration.AppURL = host
+				fn(id)
 
 				return nil
 			},
