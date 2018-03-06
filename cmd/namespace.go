@@ -27,8 +27,8 @@ import (
 
 var Namespace = cli.Command{
 	Name:        "namespace",
-	Usage:       "create, delete, tag, show, list",
-	Description: `Create, delete, tag, show and list namespaces`,
+	Usage:       "create, delete, tag, show, list, download",
+	Description: `Create, delete, tag, show, list and download namespaces`,
 	Subcommands: []cli.Command{
 		{
 			Name:  "create",
@@ -120,6 +120,20 @@ var Namespace = cli.Command{
 				for _, i := range tlist {
 					fmt.Println("- " + i)
 				}
+				return nil
+			},
+		},
+		{
+			Name:  "download",
+			Usage: "<namespace> <target>",
+			Action: func(c *cli.Context) error {
+				host := c.GlobalString("master")
+				fetcher := NewClient(host)
+				ns := c.Args().First()
+				target := c.Args().Get(1)
+
+				fetcher.DownloadArtefactsFromNamespace(ns, target)
+
 				return nil
 			},
 		},
