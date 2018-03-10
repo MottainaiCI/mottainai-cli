@@ -43,7 +43,7 @@ var Task = cli.Command{
 			Name:  "create",
 			Usage: "create a new task",
 			Flags: []cli.Flag{
-				BoolFlag("json", "Decode parameters as JSON from --file"),
+				StringFlag("json", "file.json", "Decode parameters as JSON from --file"),
 				StringFlag("source, s", "https://github.com/foo/bar.git", "Repository url"),
 				StringFlag("directory, d", "/test, /example", "Directory inside repository url"),
 				StringFlag("script", "/foo/bar", "Entrypoint script"),
