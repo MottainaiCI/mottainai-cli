@@ -110,9 +110,8 @@ var Namespace = cli.Command{
 			Action: func(c *cli.Context) error {
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
-				ns := c.Args().First()
 
-				fmt.Println("Available namespaces: ", ns)
+				fmt.Println("Available namespaces: ")
 				var tlist []string
 
 				fetcher.GetJSONOptions("/api/namespace/list", map[string]string{}, &tlist)

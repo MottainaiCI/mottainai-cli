@@ -44,7 +44,6 @@ var Task = cli.Command{
 			Usage: "create a new task",
 			Flags: []cli.Flag{
 				BoolFlag("json", "Decode parameters as JSON from --file"),
-				StringFlag("file, f", "whatever.json", "Read option file"),
 				StringFlag("source, s", "https://github.com/foo/bar.git", "Repository url"),
 				StringFlag("directory, d", "/test, /example", "Directory inside repository url"),
 				StringFlag("script", "/foo/bar", "Entrypoint script"),
@@ -54,14 +53,15 @@ var Task = cli.Command{
 				StringFlag("namespace, n", "test", "Specify a namespace the task will be started on"),
 				StringFlag("storage_path, sp", "storage", "Specify the storage path in the task"),
 				StringFlag("artefact_path, ap", "artefacts", "Specify the artefact path in the task"),
+				StringFlag("tag_namespace, tn", "whatever", "Automatically to a namespace on success"),
 			},
 			Action: func(c *cli.Context) error {
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				dat := make(map[string]string)
 
-				if c.Bool("json") {
-					content, err := ioutil.ReadFile(c.String("file"))
+				if c.IsSet("json") {
+					content, err := ioutil.ReadFile(c.String("json"))
 					if err != nil {
 						panic(err)
 					}
@@ -207,9 +207,10 @@ var Task = cli.Command{
 							if err != nil {
 								panic(err)
 							}
-							fmt.Println(string(buff))
+							printBuff(buff)
+						} else {
+							fmt.Println("Can't attach to any log")
 						}
-						fmt.Println("Can't attach to any log")
 						return
 					}
 
@@ -218,10 +219,7 @@ var Task = cli.Command{
 						panic(err)
 					}
 					pos += len(buff)
-					if len(buff) > 0 {
-						fmt.Println(string(buff))
-
-					}
+					printBuff(buff)
 				}
 
 			},

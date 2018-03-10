@@ -20,11 +20,21 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/MottainaiCI/mottainai-server/pkg/client"
 	"github.com/urfave/cli"
 )
+
+func printBuff(buff []byte) {
+	data := string(buff)
+	data = strings.TrimSpace(data)
+	if len(data) > 0 {
+		fmt.Println(data)
+	}
+}
 
 func NewClient(host string) *client.Fetcher {
 	fetcher := &client.Fetcher{}
