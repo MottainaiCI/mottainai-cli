@@ -23,13 +23,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"sort"
 	"strconv"
 	"time"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
-
 	"github.com/urfave/cli"
 )
 
@@ -65,31 +66,27 @@ var Task = cli.Command{
 					if err != nil {
 						panic(err)
 					}
-
-					fmt.Printf("File contents: %s", content)
-
 					if err := json.Unmarshal(content, &dat); err != nil {
 						panic(err)
 					}
-
-					res, err := fetcher.Form("/api/tasks", dat)
-					if err != nil {
-						panic(err)
+				} else {
+					for _, n := range c.FlagNames() {
+						dat[n] = c.String(n)
 					}
-					fmt.Println(fetcher.BaseURL + "/tasks/display/" + string(res))
-					return nil
 				}
-
-				for _, n := range c.FlagNames() {
-					dat[n] = c.String(n)
-				}
-				fmt.Println(dat)
 
 				res, err := fetcher.Form("/api/tasks", dat)
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println(fetcher.BaseURL + "/tasks/display/" + string(res))
+				tid := string(res)
+				fmt.Println("-------------------------")
+				fmt.Println("Task " + tid + " has been created")
+				fmt.Println("-------------------------")
+				fmt.Println("Live log: mottainai-cli --master " + host + " task attach " + tid)
+				fmt.Println("Information: mottainai-cli --master " + host + " task show " + tid)
+				fmt.Println("URL: " + fetcher.BaseURL + "/tasks/display/" + tid)
+				fmt.Println("-------------------------")
 
 				return nil
 			},
@@ -101,7 +98,9 @@ var Task = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				task := c.Args().First()
-
+				if len(task) == 0 {
+					log.Fatalln("You need to define a task id")
+				}
 				res, err := fetcher.GetOptions("/api/tasks/delete/"+task, map[string]string{})
 				if err != nil {
 					return err
@@ -118,7 +117,9 @@ var Task = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				task := c.Args().First()
-
+				if len(task) == 0 {
+					log.Fatalln("You need to define a task id")
+				}
 				res, err := fetcher.GetOptions("/api/tasks/start"+task, map[string]string{})
 				if err != nil {
 					return err
@@ -135,12 +136,15 @@ var Task = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				task := c.Args().First()
-
-				res, err := fetcher.GetOptions("/api/tasks/stop/"+task, map[string]string{})
+				if len(task) == 0 {
+					log.Fatalln("You need to define a task id")
+				}
+				_, err := fetcher.GetOptions("/api/tasks/stop/"+task, map[string]string{})
 				if err != nil {
+					log.Fatalln(err)
 					return err
 				}
-				fmt.Println(string(res))
+				fmt.Println("Request sent successfully")
 
 				return nil
 			},
@@ -152,7 +156,9 @@ var Task = cli.Command{
 				host := c.GlobalString("master")
 				task := c.Args().First()
 				fetcher := NewClient(host)
-
+				if len(task) == 0 {
+					log.Fatalln("You need to define a task id")
+				}
 				var t citasks.Task
 				fetcher.GetJSONOptions("/api/tasks/"+task, map[string]string{}, &t)
 
@@ -176,7 +182,9 @@ var Task = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				task := c.Args().First()
-
+				if len(task) == 0 {
+					log.Fatalln("You need to define a task id")
+				}
 				fmt.Println("Artefacts for:", task)
 				var tlist []string
 				fetcher.GetJSONOptions("/api/tasks/"+task+"/artefacts", map[string]string{}, &tlist)
@@ -194,7 +202,9 @@ var Task = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				task := c.Args().First()
-
+				if len(task) == 0 {
+					log.Fatalln("You need to define a task id")
+				}
 				var pos = 0
 
 				for {
@@ -234,8 +244,15 @@ var Task = cli.Command{
 				var tlist []citasks.Task
 				fetcher.GetJSONOptions("/api/tasks", map[string]string{}, &tlist)
 
+				sort.Slice(tlist[:], func(i, j int) bool {
+					return tlist[i].CreatedTime > tlist[j].CreatedTime
+				})
+				fmt.Println("Task list:")
 				for _, i := range tlist {
-					fmt.Println(strconv.Itoa(i.ID) + " " + i.Status)
+					t, _ := time.Parse("20060102150405", i.CreatedTime)
+					t2, _ := time.Parse("20060102150405", i.EndTime)
+
+					fmt.Println("\t - ID: " + strconv.Itoa(i.ID) + " (" + i.Source + i.Directory + ") Status: " + i.Status + " Result: " + i.Result + " Created: " + t.String() + " End: " + t2.String())
 				}
 				return nil
 			},
@@ -248,6 +265,9 @@ var Task = cli.Command{
 				fetcher := NewClient(host)
 				id := c.Args().First()
 				target := c.Args().Get(1)
+				if len(id) == 0 || len(target) == 0 {
+					log.Fatalln("You need to define a task id and a target")
+				}
 
 				fetcher.DownloadArtefactsFromTask(id, target)
 

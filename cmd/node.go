@@ -22,6 +22,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -57,7 +58,9 @@ var Node = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				node := c.Args().First()
-
+				if len(node) == 0 {
+					log.Fatalln("You need to define a node id")
+				}
 				res, err := fetcher.GetOptions("/api/nodes/delete/"+node, map[string]string{})
 				if err != nil {
 					return err
@@ -74,17 +77,19 @@ var Node = cli.Command{
 			Action: func(c *cli.Context) error {
 				host := c.GlobalString("master")
 				fetcher := &client.Fetcher{}
-				task := c.Args().First()
+				node := c.Args().First()
 				fetcher.BaseURL = host
-
+				if len(node) == 0 {
+					log.Fatalln("You need to define a node id")
+				}
 				var n nodes.Node
-				fetcher.GetJSONOptions("/api/nodes/show/"+task, map[string]string{}, &n)
+				fetcher.GetJSONOptions("/api/nodes/show/"+node, map[string]string{}, &n)
 
 				//fmt.Println(t)
 
 				b, err := json.MarshalIndent(n, "", "  ")
 				if err != nil {
-					fmt.Println("error:", err)
+					log.Fatalln("error:", err)
 				}
 				fmt.Println(string(b))
 				//for _, i := range tlist {

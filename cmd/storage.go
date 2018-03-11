@@ -21,6 +21,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 
 	storage "github.com/MottainaiCI/mottainai-server/pkg/storage"
@@ -40,7 +41,9 @@ var Storage = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				storage := c.Args().First()
-
+				if len(storage) == 0 {
+					log.Fatalln("You need to define a storage name")
+				}
 				res, err := fetcher.GetOptions("/api/storage/"+storage+"/create", map[string]string{})
 				if err != nil {
 					return err
@@ -57,7 +60,9 @@ var Storage = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				storage := c.Args().First()
-
+				if len(storage) == 0 {
+					log.Fatalln("You need to define a storage id")
+				}
 				res, err := fetcher.GetOptions("/api/storage/"+storage+"/delete", map[string]string{})
 				if err != nil {
 					return err
@@ -74,7 +79,9 @@ var Storage = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				storage := c.Args().First()
-
+				if len(storage) == 0 {
+					log.Fatalln("You need to define a storage id")
+				}
 				fmt.Println("Storage: ", storage)
 				var tlist []string
 
@@ -89,13 +96,12 @@ var Storage = cli.Command{
 
 		{
 			Name:  "list",
-			Usage: "list storages",
+			Usage: "list available storages",
 			Action: func(c *cli.Context) error {
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
-				storage_name := c.Args().First()
 
-				fmt.Println("Available storages: ", storage_name)
+				log.Println("Available storages: ")
 
 				var n []storage.Storage
 				fetcher.GetJSONOptions("/api/storage/list", map[string]string{}, &n)
@@ -115,6 +121,9 @@ var Storage = cli.Command{
 				fetcher := NewClient(host)
 				storage := c.Args().First()
 				target := c.Args().Get(1)
+				if len(storage) == 0 || len(target) == 0 {
+					log.Fatalln("You need to define a storage id and a target")
+				}
 
 				fetcher.DownloadArtefactsFromStorage(storage, target)
 

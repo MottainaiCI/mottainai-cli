@@ -21,6 +21,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/urfave/cli"
 )
@@ -37,12 +38,14 @@ var Namespace = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				ns := c.Args().First()
-
+				if len(ns) == 0 {
+					log.Fatalln("You need to define a namespace name ")
+				}
 				res, err := fetcher.GetOptions("/api/namespace/"+ns+"/create", map[string]string{})
 				if err != nil {
 					return err
 				}
-				fmt.Println(string(res))
+				log.Println(string(res))
 
 				return nil
 			},
@@ -54,12 +57,14 @@ var Namespace = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				ns := c.Args().First()
-
+				if len(ns) == 0 {
+					log.Fatalln("You need to define a namespace name ")
+				}
 				res, err := fetcher.GetOptions("/api/namespace/"+ns+"/delete", map[string]string{})
 				if err != nil {
 					return err
 				}
-				fmt.Println(string(res))
+				log.Println(string(res))
 
 				return nil
 			},
@@ -71,14 +76,16 @@ var Namespace = cli.Command{
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
 				ns := c.Args().First()
-
+				if len(ns) == 0 {
+					log.Fatalln("You need to define a namespace name ")
+				}
 				fmt.Println("Namespace: ", ns)
 				var tlist []string
 
 				fetcher.GetJSONOptions("/api/namespace/"+ns+"/list", map[string]string{}, &tlist)
 
 				for _, i := range tlist {
-					fmt.Println("- " + i)
+					log.Println("- " + i)
 				}
 				return nil
 			},
@@ -94,12 +101,14 @@ var Namespace = cli.Command{
 				from := c.String("from")
 				fetcher := NewClient(host)
 				ns := c.Args().First()
-
+				if len(ns) == 0 || len(from) == 0 {
+					log.Fatalln("You need to define a namespace name and a task id")
+				}
 				res, err := fetcher.GetOptions("/api/namespace/"+ns+"/tag/"+from, map[string]string{})
 				if err != nil {
 					return err
 				}
-				fmt.Println(string(res))
+				log.Println(string(res))
 
 				return nil
 			},
@@ -130,7 +139,9 @@ var Namespace = cli.Command{
 				fetcher := NewClient(host)
 				ns := c.Args().First()
 				target := c.Args().Get(1)
-
+				if len(ns) == 0 || len(target) == 0 {
+					log.Fatalln("You need to define a namespace name and a target")
+				}
 				fetcher.DownloadArtefactsFromNamespace(ns, target)
 
 				return nil
