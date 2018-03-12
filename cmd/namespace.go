@@ -22,7 +22,9 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli"
 )
 
@@ -125,9 +127,21 @@ var Namespace = cli.Command{
 
 				fetcher.GetJSONOptions("/api/namespace/list", map[string]string{}, &tlist)
 
+				var ns_table [][]string
+
 				for _, i := range tlist {
-					fmt.Println("- " + i)
+					ns_table = append(ns_table, []string{i})
 				}
+
+				table := tablewriter.NewWriter(os.Stdout)
+				table.SetHeader([]string{"Name"})
+				table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+				table.SetCenterSeparator("|")
+				for _, v := range ns_table {
+					table.Append(v)
+				}
+				table.Render()
+
 				return nil
 			},
 		},

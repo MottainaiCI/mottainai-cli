@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -31,6 +32,7 @@ import (
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
+	tablewriter "github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli"
 )
 
@@ -247,13 +249,25 @@ var Task = cli.Command{
 				sort.Slice(tlist[:], func(i, j int) bool {
 					return tlist[i].CreatedTime > tlist[j].CreatedTime
 				})
-				fmt.Println("Task list:")
+
+				var task_table [][]string
+
 				for _, i := range tlist {
 					t, _ := time.Parse("20060102150405", i.CreatedTime)
 					t2, _ := time.Parse("20060102150405", i.EndTime)
-
-					fmt.Println("\t - ID: " + strconv.Itoa(i.ID) + " (" + i.Source + i.Directory + ") Status: " + i.Status + " Result: " + i.Result + " Created: " + t.String() + " End: " + t2.String())
+					task_table = append(task_table, []string{strconv.Itoa(i.ID), i.Status, i.Result, t.String(), t2.String(), i.Directory})
 				}
+
+				table := tablewriter.NewWriter(os.Stdout)
+				table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+				table.SetCenterSeparator("|")
+				table.SetHeader([]string{"ID", "Status", "Result", "Created", "End", "Dir"})
+
+				for _, v := range task_table {
+					table.Append(v)
+				}
+				table.Render()
+
 				return nil
 			},
 		},

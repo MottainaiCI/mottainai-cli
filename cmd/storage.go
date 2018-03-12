@@ -22,9 +22,11 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	storage "github.com/MottainaiCI/mottainai-server/pkg/storage"
+	"github.com/olekukonko/tablewriter"
 
 	"github.com/urfave/cli"
 )
@@ -106,9 +108,20 @@ var Storage = cli.Command{
 				var n []storage.Storage
 				fetcher.GetJSONOptions("/api/storage/list", map[string]string{}, &n)
 
+				var storage_table [][]string
+
 				for _, i := range n {
-					fmt.Println(strconv.Itoa(i.ID) + " Name:" + i.Name + " Path:" + i.Path)
+					storage_table = append(storage_table, []string{strconv.Itoa(i.ID), i.Name, i.Path})
 				}
+
+				table := tablewriter.NewWriter(os.Stdout)
+				table.SetHeader([]string{"ID", "Name", "Path"})
+				table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+				table.SetCenterSeparator("|")
+				for _, v := range storage_table {
+					table.Append(v)
+				}
+				table.Render()
 
 				return nil
 			},

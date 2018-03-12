@@ -23,10 +23,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
+	"github.com/olekukonko/tablewriter"
 
 	"github.com/urfave/cli"
 )
@@ -108,9 +110,22 @@ var Node = cli.Command{
 				var n []nodes.Node
 				fetcher.GetJSONOptions("/api/nodes", map[string]string{}, &n)
 
+				var node_table [][]string
+
 				for _, i := range n {
-					fmt.Println(strconv.Itoa(i.ID) + " Machine UUID:" + i.NodeID + " Key:" + i.Key + " " + i.User + ":" + i.Pass)
+					node_table = append(node_table, []string{strconv.Itoa(i.ID), i.User, i.Pass, i.Key, i.NodeID})
 				}
+
+				table := tablewriter.NewWriter(os.Stdout)
+				table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+				table.SetCenterSeparator("|")
+				table.SetHeader([]string{"ID", "Key", "User", "Pass", "UUID"})
+
+				for _, v := range node_table {
+					table.Append(v)
+				}
+				table.Render()
+
 				return nil
 			},
 		},
