@@ -28,7 +28,7 @@
     "pkg/tasks",
     "pkg/utils"
   ]
-  revision = "0769fb3ef670c9c1b7664e39cd60e9fd96d590ba"
+  revision = "349820d9041c1085aeca70db8b53de608e794852"
 
 [[projects]]
   branch = "master"
@@ -37,9 +37,10 @@
   revision = "cd527374f1e5bff4938207604a14f2e38a9cf512"
 
 [[projects]]
+  branch = "master"
   name = "github.com/RichardKnop/logging"
   packages = ["."]
-  revision = "0745ebe7cc826d7d0453c7c9f08ea75a7fe86f7b"
+  revision = "66aaaba182584c20ec574b064975974f92f0936a"
 
 [[projects]]
   name = "github.com/RichardKnop/machinery"
@@ -51,10 +52,44 @@
     "v1/config",
     "v1/log",
     "v1/retry",
-    "v1/tasks"
+    "v1/tasks",
+    "v1/tracing"
   ]
-  revision = "00d09f6102e63114c8eb0f6ffda3deda3884b079"
-  version = "v1.0.0"
+  revision = "6a249f4becc93c9938a1cd85831e6efc3086100b"
+  version = "v1.2.2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/aws/aws-sdk-go"
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/stscreds",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "internal/sdkrand",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/xml/xmlutil",
+    "service/sqs",
+    "service/sqs/sqsiface",
+    "service/sts"
+  ]
+  revision = "d856824058f17a35c61cabdfb1c40559ce070cd9"
 
 [[projects]]
   branch = "master"
@@ -69,10 +104,10 @@
   revision = "a7ddd980baf9ec8ad3f2e6826ef9eacfe55b3f02"
 
 [[projects]]
-  branch = "master"
   name = "github.com/codegangsta/inject"
   packages = ["."]
-  revision = "33e0aa1cb7c019ccc3fbe049a8262a6403d30504"
+  revision = "37d7f8432a3e684eef9b2edece76bdfa6ac85b39"
+  version = "v1.0-rc1"
 
 [[projects]]
   branch = "master"
@@ -110,13 +145,13 @@
     "pkg/term",
     "pkg/term/windows"
   ]
-  revision = "b9cc5cba6964b565e8b2cf1ff50c3e946a924fc8"
+  revision = "a575b0b1384b2ba89b79cbd7e770fbeb616758b3"
 
 [[projects]]
-  branch = "master"
   name = "github.com/docker/go-connections"
   packages = ["nat"]
-  revision = "7395e3f8aa162843a74ed6d48e79627d9792ac55"
+  revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
+  version = "v0.3.0"
 
 [[projects]]
   name = "github.com/docker/go-units"
@@ -142,13 +177,26 @@
     "internal",
     "redis"
   ]
-  revision = "95d11dba2d44531bdb8022752b98912baafae03a"
+  revision = "a69d19351219b6dd56f274f96d85a7014a2ec34e"
+  version = "v1.6.0"
 
 [[projects]]
-  branch = "master"
+  name = "github.com/gizak/termui"
+  packages = ["."]
+  revision = "24acd523c756fd9728824cdfac66aad9d8982fb7"
+  version = "v2.2.0"
+
+[[projects]]
+  name = "github.com/go-ini/ini"
+  packages = ["."]
+  revision = "6333e38ac20b8949a8dd68baa3650f4dee8f39f0"
+  version = "v1.33.0"
+
+[[projects]]
   name = "github.com/gogo/protobuf"
   packages = ["proto"]
-  revision = "d5bc08a2c4c572e9bcff820aa125fe38ac3a3a42"
+  revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -157,10 +205,21 @@
   revision = "f5145c200b133a0768ce154da6f6a2feb21be4da"
 
 [[projects]]
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  revision = "0b12d6b5"
+
+[[projects]]
   branch = "master"
   name = "github.com/kelseyhightower/envconfig"
   packages = ["."]
   revision = "b2c5c876e2659d9060d82e9b8494150d53854cc4"
+
+[[projects]]
+  name = "github.com/maruel/panicparse"
+  packages = ["stack"]
+  revision = "785840568bdc7faa0dfb1cd6c643207f03271f64"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -175,10 +234,34 @@
   version = "v0.0.3"
 
 [[projects]]
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
+  version = "v0.0.2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/go-wordwrap"
+  packages = ["."]
+  revision = "ad45545899c7b13c020ea92b2072220eefad42b8"
+
+[[projects]]
   branch = "master"
   name = "github.com/mudler/anagent"
   packages = ["."]
   revision = "a44327bef7535c7813ce4330b7488f872e780472"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/nsf/termbox-go"
+  packages = ["."]
+  revision = "e2050e41c8847748ec5288741c0b19a8cb26d084"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/olekukonko/tablewriter"
+  packages = ["."]
+  revision = "b8a9be070da40449e501c3c4730a889e42d87a9e"
 
 [[projects]]
   name = "github.com/opencontainers/go-digest"
@@ -187,44 +270,56 @@
   version = "v1.0.0-rc1"
 
 [[projects]]
-  branch = "master"
   name = "github.com/opencontainers/image-spec"
   packages = [
     "specs-go",
     "specs-go/v1"
   ]
-  revision = "149252121d044fddff670adcdc67f33148e16226"
+  revision = "d60099175f88c47cd379c4738d158884749ed235"
+  version = "v1.0.1"
 
 [[projects]]
-  branch = "master"
   name = "github.com/opencontainers/runc"
   packages = [
     "libcontainer/system",
     "libcontainer/user"
   ]
-  revision = "69663f0bd4b60df09991c08812a60108003fa340"
+  revision = "baf6536d6259209c3edfa2b22237af82942d3dfa"
+  version = "v0.1.1"
 
 [[projects]]
-  branch = "master"
+  name = "github.com/opentracing/opentracing-go"
+  packages = [
+    ".",
+    "ext",
+    "log"
+  ]
+  revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
+  version = "v1.0.2"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
-  revision = "30136e27e2ac8d167177e8a583aa4c3fea5be833"
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/satori/go.uuid"
   packages = ["."]
-  revision = "5bf94b69c6b68ee1b541973bb8e1144db23a194b"
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
+  version = "v1.0.4"
 
 [[projects]]
   branch = "master"
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "f4ee69125072b22721efbe639bd0da9c9d19b8cc"
-
-[[projects]]
   name = "github.com/streadway/amqp"
   packages = ["."]
-  revision = "dfe15e36048539f4cda41f240b27a5ca25b9cd46"
+  revision = "d27ae102b8892a98ca4edb74539436af62577379"
 
 [[projects]]
   name = "github.com/theckman/go-flock"
@@ -248,7 +343,7 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "d0aafc73d5cdc42264b0af071c261abac580695e"
+  revision = "ae89d30ce0c63142b652837da33d782e2b0a9b25"
 
 [[projects]]
   branch = "master"
@@ -292,6 +387,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a682df9e357d243a5ae3bd7c07065ee84c4b4616233f7e7b359c0a55f8155425"
+  inputs-digest = "4a2f49960121c88812a227e818c061ad4887e9b598f903ada416f0242e49900e"
   solver-name = "gps-cdcl"
   solver-version = 1
