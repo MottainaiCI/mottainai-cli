@@ -30,8 +30,8 @@ import (
 
 var Namespace = cli.Command{
 	Name:        "namespace",
-	Usage:       "create, delete, tag, show, list, download",
-	Description: `Create, delete, tag, show, list and download namespaces`,
+	Usage:       "create, delete, tag, clone, show, list, download",
+	Description: `Create, delete, tag, clone, show, list and download namespaces`,
 	Subcommands: []cli.Command{
 		{
 			Name:  "create",
@@ -107,6 +107,29 @@ var Namespace = cli.Command{
 					log.Fatalln("You need to define a namespace name and a task id")
 				}
 				res, err := fetcher.GetOptions("/api/namespace/"+ns+"/tag/"+from, map[string]string{})
+				if err != nil {
+					return err
+				}
+				log.Println(string(res))
+
+				return nil
+			},
+		},
+		{
+			Name:  "clone",
+			Usage: "clone a namespace",
+			Flags: []cli.Flag{
+				StringFlag("from, f", "test", "Namespace"),
+			},
+			Action: func(c *cli.Context) error {
+				host := c.GlobalString("master")
+				from := c.String("from")
+				fetcher := NewClient(host)
+				ns := c.Args().First()
+				if len(ns) == 0 || len(from) == 0 {
+					log.Fatalln("You need to define a namespace name and a namespace name")
+				}
+				res, err := fetcher.GetOptions("/api/namespace/"+ns+"/clone/"+from, map[string]string{})
 				if err != nil {
 					return err
 				}
