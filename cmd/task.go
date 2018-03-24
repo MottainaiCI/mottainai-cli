@@ -85,9 +85,10 @@ var Task = cli.Command{
 				fmt.Println("-------------------------")
 				fmt.Println("Task " + tid + " has been created")
 				fmt.Println("-------------------------")
-				fmt.Println("Live log: mottainai-cli --master " + host + " task attach " + tid)
-				fmt.Println("Information: mottainai-cli --master " + host + " task show " + tid)
-				fmt.Println("URL: " + fetcher.BaseURL + "/tasks/display/" + tid)
+				fmt.Println("Live log:", " mottainai-cli --master "+host+" task attach "+tid)
+				fmt.Println("Information:", " mottainai-cli --master "+host+" task show "+tid)
+				fmt.Println("URL:", " "+fetcher.BaseURL+"/tasks/display/"+tid)
+				fmt.Println("Build Log:", " "+fetcher.BaseURL+"/artefact/"+tid+"/build_"+tid+".log")
 				fmt.Println("-------------------------")
 
 				return nil
@@ -198,6 +199,23 @@ var Task = cli.Command{
 			},
 		},
 		{
+			Name:  "log",
+			Usage: "show log of a task",
+			Action: func(c *cli.Context) {
+				host := c.GlobalString("master")
+				fetcher := NewClient(host)
+				task := c.Args().First()
+				if len(task) == 0 {
+					log.Fatalln("You need to define a task id")
+				}
+				buff, err := fetcher.GetOptions("/api/tasks/stream_output/"+task+"/0", map[string]string{})
+				if err != nil {
+					panic(err)
+				}
+				printBuff(buff)
+			},
+		},
+		{
 			Name:  "attach",
 			Usage: "attach to a task output",
 			Action: func(c *cli.Context) {
@@ -215,13 +233,13 @@ var Task = cli.Command{
 					fetcher.GetJSONOptions("/api/tasks/"+task, map[string]string{}, &t)
 					if t.Status != "running" {
 						if t.Status == "done" && pos == 0 {
-							buff, err := fetcher.GetOptions("/artefact/"+task+"/build.log", map[string]string{})
+							buff, err := fetcher.GetOptions("/artefact/"+task+"/build_"+strconv.Itoa(t.ID)+".log", map[string]string{})
 							if err != nil {
 								panic(err)
 							}
 							printBuff(buff)
 						} else {
-							fmt.Println("Can't attach to any log")
+							fmt.Println("Build status: " + t.Status + " Can't attach to any live stream.")
 						}
 						return
 					}
