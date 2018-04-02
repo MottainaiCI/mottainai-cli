@@ -46,7 +46,7 @@ var Task = cli.Command{
 			Name:  "create",
 			Usage: "create a new task",
 			Flags: []cli.Flag{
-				StringFlag("json", "file.json", "Decode parameters as JSON from --file"),
+				StringFlag("json", "file.json", "Decode parameters from a JSON file"),
 				StringFlag("source, s", "https://github.com/foo/bar.git", "Repository url"),
 				StringFlag("directory, d", "/test, /example", "Directory inside repository url"),
 				StringFlag("script", "/foo/bar", "Entrypoint script"),
@@ -123,7 +123,7 @@ var Task = cli.Command{
 				if len(task) == 0 {
 					log.Fatalln("You need to define a task id")
 				}
-				res, err := fetcher.GetOptions("/api/tasks/start"+task, map[string]string{})
+				res, err := fetcher.GetOptions("/api/tasks/start/"+task, map[string]string{})
 				if err != nil {
 					return err
 				}
