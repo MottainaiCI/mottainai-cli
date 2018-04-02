@@ -257,6 +257,9 @@ var Task = cli.Command{
 		{
 			Name:  "list",
 			Usage: "list tasks",
+			Flags: []cli.Flag{
+				BoolFlag("quiet, q", "Quiet output"),
+			},
 			Action: func(c *cli.Context) error {
 				host := c.GlobalString("master")
 				fetcher := &client.Fetcher{}
@@ -267,6 +270,12 @@ var Task = cli.Command{
 				sort.Slice(tlist[:], func(i, j int) bool {
 					return tlist[i].CreatedTime > tlist[j].CreatedTime
 				})
+				if c.Bool("quiet") {
+					for _, i := range tlist {
+						fmt.Println(i.ID)
+					}
+					return nil
+				}
 
 				var task_table [][]string
 
