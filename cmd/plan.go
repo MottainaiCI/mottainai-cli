@@ -155,13 +155,13 @@ var Plan = cli.Command{
 				var task_table [][]string
 
 				for _, i := range tlist {
-					task_table = append(task_table, []string{strconv.Itoa(i.ID), i.Status, i.Result, i.Planned, i.Directory})
+					task_table = append(task_table, []string{strconv.Itoa(i.ID), i.Planned, i.Directory})
 				}
 
 				table := tablewriter.NewWriter(os.Stdout)
 				table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 				table.SetCenterSeparator("|")
-				table.SetHeader([]string{"ID", "Status", "Result", "Planned", "Dir"})
+				table.SetHeader([]string{"ID", "Planned", "Dir"})
 
 				for _, v := range task_table {
 					table.Append(v)
