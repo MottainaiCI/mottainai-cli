@@ -38,7 +38,7 @@ import (
 
 var Task = cli.Command{
 	Name:        "task",
-	Usage:       "create, remove, stop, start, show, list, attach, artefacts, download, execute",
+	Usage:       "create, clone, remove, stop, start, show, list, attach, artefacts, download, execute",
 	Description: `Task interface`,
 	//Action:      runTask,
 	Subcommands: []cli.Command{
@@ -92,6 +92,25 @@ var Task = cli.Command{
 				fmt.Println("URL:", " "+fetcher.BaseURL+"/tasks/display/"+tid)
 				fmt.Println("Build Log:", " "+fetcher.BaseURL+"/artefact/"+tid+"/build_"+tid+".log")
 				fmt.Println("-------------------------")
+
+				return nil
+			},
+		},
+		{
+			Name:  "clone",
+			Usage: "clone a task",
+			Action: func(c *cli.Context) error {
+				host := c.GlobalString("master")
+				fetcher := NewClient(host)
+				task := c.Args().First()
+				if len(task) == 0 {
+					log.Fatalln("You need to define a task id")
+				}
+				res, err := fetcher.GetOptions("/api/tasks/clone/"+task, map[string]string{})
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(res))
 
 				return nil
 			},
