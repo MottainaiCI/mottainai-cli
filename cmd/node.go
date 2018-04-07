@@ -113,13 +113,13 @@ var Node = cli.Command{
 				var node_table [][]string
 
 				for _, i := range n {
-					node_table = append(node_table, []string{strconv.Itoa(i.ID), i.User, i.Pass, i.Key, i.NodeID})
+					node_table = append(node_table, []string{strconv.Itoa(i.ID), i.Hostname, i.User, i.Pass, i.Key, i.NodeID})
 				}
 
 				table := tablewriter.NewWriter(os.Stdout)
 				table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 				table.SetCenterSeparator("|")
-				table.SetHeader([]string{"ID", "Key", "User", "Pass", "UUID"})
+				table.SetHeader([]string{"ID", "Hostname", "Key", "User", "Pass", "UUID"})
 
 				for _, v := range node_table {
 					table.Append(v)
