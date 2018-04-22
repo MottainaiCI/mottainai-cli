@@ -95,7 +95,6 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 	var (
 		source        string
 		script        string
-		yaml          string
 		directory     string
 		namespace     string
 		commit        string
@@ -115,7 +114,22 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 		prune         string
 		tag_namespace string
 		cache_image   string
+
+		environment []string
+		binds       []string
 	)
+	if arr, ok := t["binds"].([]interface{}); ok {
+		for _, v := range arr {
+			binds = append(binds, v.(string))
+		}
+	}
+
+	if arr, ok := t["environment"].([]interface{}); ok {
+		for _, v := range arr {
+			environment = append(environment, v.(string))
+		}
+	}
+
 	if str, ok := t["root_task"].(string); ok {
 		root_task = str
 	}
@@ -127,9 +141,6 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 	}
 	if str, ok := t["script"].(string); ok {
 		script = str
-	}
-	if str, ok := t["yaml"].(string); ok {
-		yaml = str
 	}
 	if str, ok := t["directory"].(string); ok {
 		directory = str
@@ -191,7 +202,6 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 	task := Task{
 		Source:       source,
 		Script:       script,
-		Yaml:         yaml,
 		Directory:    directory,
 		TaskName:     taskname,
 		Namespace:    namespace,
@@ -211,6 +221,8 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 		TagNamespace: tag_namespace,
 		Prune:        prune,
 		CacheImage:   cache_image,
+		Environment:  environment,
+		Binds:        binds,
 	}
 	return task
 }
