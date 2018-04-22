@@ -63,7 +63,7 @@ var Task = cli.Command{
 			Action: func(c *cli.Context) error {
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
-				dat := make(map[string]string)
+				dat := make(map[string]interface{})
 
 				if c.IsSet("json") {
 					content, err := ioutil.ReadFile(c.String("json"))
@@ -79,7 +79,7 @@ var Task = cli.Command{
 					}
 				}
 
-				res, err := fetcher.Form("/api/tasks", dat)
+				res, err := fetcher.GenericForm("/api/tasks", dat)
 				if err != nil {
 					panic(err)
 				}
