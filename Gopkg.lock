@@ -28,7 +28,7 @@
     "pkg/tasks",
     "pkg/utils"
   ]
-  revision = "7bc8694071df94c61f721b8dbd68a8baa0609554"
+  revision = "cbe1ae717a52250bc388ef70ce5e4fe9e14759f5"
 
 [[projects]]
   branch = "master"
@@ -387,6 +387,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4a2f49960121c88812a227e818c061ad4887e9b598f903ada416f0242e49900e"
+  inputs-digest = "22ad927d0f46e91bed410038f576af8a5b18d4eda5786390713e90e2ce3acfab"
   solver-name = "gps-cdcl"
   solver-version = 1
