@@ -58,6 +58,7 @@ var Task = cli.Command{
 				StringFlag("artefact_path, ap", "artefacts", "Specify the artefact path in the task"),
 				StringFlag("tag_namespace, tn", "", "Automatically to the specified namespace on success"),
 				StringFlag("prune, pr", "yes", "Perform pruning actions after execution"),
+				StringFlag("queue, q", "", "Queue where to send the task to"),
 				StringFlag("cache_image, ci", "yes", "Cache image after execution inside the host for later reuse."),
 			},
 			Action: func(c *cli.Context) error {
