@@ -119,7 +119,7 @@ var Node = cli.Command{
 				table := tablewriter.NewWriter(os.Stdout)
 				table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 				table.SetCenterSeparator("|")
-				table.SetHeader([]string{"ID", "Hostname", "Key", "User", "Pass", "UUID"})
+				table.SetHeader([]string{"ID", "Hostname", "User", "Pass", "Key", "UUID"})
 
 				for _, v := range node_table {
 					table.Append(v)
