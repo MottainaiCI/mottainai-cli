@@ -57,12 +57,13 @@ var Plan = cli.Command{
 				StringFlag("tag_namespace, tn", "", "Automatically to the specified namespace on success"),
 				StringFlag("prune, pr", "yes", "Perform pruning actions after execution"),
 				StringFlag("cache_image, ci", "yes", "Cache image after execution inside the host for later reuse."),
+				StringFlag("queue, q", "", "Queue where to send the task to"),
 				StringFlag("planned, pl", "", "Plan task creation with cron syntax ( e.g @every 1m )"),
 			},
 			Action: func(c *cli.Context) error {
 				host := c.GlobalString("master")
 				fetcher := NewClient(host)
-				dat := make(map[string]string)
+				dat := make(map[string]interface{})
 
 				if c.IsSet("json") {
 					content, err := ioutil.ReadFile(c.String("json"))
@@ -78,7 +79,7 @@ var Plan = cli.Command{
 					}
 				}
 
-				res, err := fetcher.Form("/api/tasks/plan", dat)
+				res, err := fetcher.GenericForm("/api/tasks/plan", dat)
 				if err != nil {
 					panic(err)
 				}
