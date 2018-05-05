@@ -38,7 +38,7 @@ import (
 
 var Task = cli.Command{
 	Name:        "task",
-	Usage:       "create, clone, remove, stop, start, show, list, attach, artefacts, download, execute",
+	Usage:       "create, clone, remove, stop, start, show, inspect, list, attach, artefacts, download, execute",
 	Description: `Task interface`,
 	//Action:      runTask,
 	Subcommands: []cli.Command{
@@ -174,6 +174,26 @@ var Task = cli.Command{
 				return nil
 			},
 		},
+		{
+			Name:  "inspect",
+			Usage: "inspect a task for debugging",
+			Action: func(c *cli.Context) error {
+				host := c.GlobalString("master")
+				task := c.Args().First()
+				fetcher := NewClient(host)
+				if len(task) == 0 {
+					log.Fatalln("You need to define a task id")
+				}
+				fetcher.Doc(task)
+
+				th := citasks.DefaultTaskHandler()
+				task_info := th.FetchTask(fetcher)
+
+				fmt.Println(task_info)
+				return nil
+			},
+		},
+
 		{
 			Name:  "show",
 			Usage: "show a task",
