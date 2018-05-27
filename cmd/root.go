@@ -23,6 +23,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	//	"reflect"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -30,9 +31,12 @@ import (
 	namespace "github.com/MottainaiCI/mottainai-cli/cmd/namespace"
 	node "github.com/MottainaiCI/mottainai-cli/cmd/node"
 	plan "github.com/MottainaiCI/mottainai-cli/cmd/plan"
+	profile "github.com/MottainaiCI/mottainai-cli/cmd/profile"
 	storage "github.com/MottainaiCI/mottainai-cli/cmd/storage"
 	task "github.com/MottainaiCI/mottainai-cli/cmd/task"
+	common "github.com/MottainaiCI/mottainai-cli/common"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	v "github.com/spf13/viper"
 )
 
 const (
@@ -62,14 +66,42 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 	},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// TODO: Load profile data and override master if present.
 
-		/*
-			fmt.Printf("SONO PRE-RUN\n")
-			if cmd.Flag("master").Changed {
-				fmt.Printf("Master changed.\n")
+		var err error
+
+		// Try to read configuration files
+		err = v.ReadInConfig()
+		// TODO: Add loglevel in debug that said no config file processed.
+		// if err != nil {
+		//	fmt.Println(err)
+		//}
+
+		// Load profile data and override master if not present.
+		if v.Get("profiles") != nil && !cmd.Flag("master").Changed {
+
+			// PRE: profiles contains a map
+			//      map[
+			//        <NAME_PROFILE1>:<PROFILE INTERFACE>
+			//        <NAME_PROFILE2>:<PROFILE INTERFACE>
+			//     ]
+
+			var conf common.ProfileConf
+			var profile *common.Profile
+			if err = v.Unmarshal(&conf); err != nil {
+				fmt.Println("Ignore config: ", err)
+			} else {
+				if v.GetString("profile") != "" {
+					profile, err = conf.GetProfile(v.GetString("profile"))
+
+					if profile != nil {
+						v.Set("master", profile.GetMaster())
+					} else {
+						fmt.Printf("No profile with name %s. I use default value.\n", v.GetString("profile"))
+					}
+				}
 			}
-		*/
+
+		}
 	},
 }
 
@@ -88,6 +120,7 @@ func init() {
 		node.NewNodeCommand(),
 		namespace.NewNamespaceCommand(),
 		plan.NewPlanCommand(),
+		profile.NewProfileCommand(),
 		storage.NewStorageCommand(),
 	)
 }
