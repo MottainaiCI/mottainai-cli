@@ -16,19 +16,16 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
-
-package cmd
+package common
 
 import (
 	"fmt"
+	cobra "github.com/spf13/cobra"
+	v "github.com/spf13/viper"
 	"strings"
-	"time"
-
-	"github.com/MottainaiCI/mottainai-server/pkg/client"
-	"github.com/urfave/cli"
 )
 
-func printBuff(buff []byte) {
+func PrintBuff(buff []byte) {
 	data := string(buff)
 	data = strings.TrimSpace(data)
 	if len(data) > 0 {
@@ -36,39 +33,28 @@ func printBuff(buff []byte) {
 	}
 }
 
-func NewClient(host string) *client.Fetcher {
-	fetcher := &client.Fetcher{}
-	fetcher.BaseURL = host
-	return fetcher
-}
-
-func StringFlag(name, value, usage string) cli.StringFlag {
-	return cli.StringFlag{
-		Name:  name,
-		Value: value,
-		Usage: usage,
+func CheckError(err error) {
+	if err != nil {
+		panic(err)
 	}
 }
 
-func BoolFlag(name, usage string) cli.BoolFlag {
-	return cli.BoolFlag{
-		Name:  name,
-		Usage: usage,
-	}
-}
+// TODO: pass settings in input.
+func BuildCmdArgs(cmd *cobra.Command, msg string) string {
+	var ans string = "mottainai-cli "
 
-func IntFlag(name string, value int, usage string) cli.IntFlag {
-	return cli.IntFlag{
-		Name:  name,
-		Value: value,
-		Usage: usage,
+	if cmd == nil {
+		panic("Invalid command")
 	}
-}
 
-func DurationFlag(name string, value time.Duration, usage string) cli.DurationFlag {
-	return cli.DurationFlag{
-		Name:  name,
-		Value: value,
-		Usage: usage,
+	if cmd.Flag("master").Changed {
+		ans += "--master " + v.GetString("master") + " "
 	}
+	if v.GetString("profile") != "" {
+		ans += "--profile " + v.GetString("profile") + " "
+	}
+
+	ans += msg
+
+	return ans
 }
