@@ -29,10 +29,6 @@
   branch = "master"
   name = "github.com/MottainaiCI/mottainai-server"
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/urfave/cli"
-
 [prune]
   go-tests = true
   unused-packages = true

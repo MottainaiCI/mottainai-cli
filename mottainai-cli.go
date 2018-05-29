@@ -19,30 +19,31 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"os"
+	"fmt"
 
-	"github.com/MottainaiCI/mottainai-cli/cmd"
-	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
-
-	"github.com/urfave/cli"
+	cli "github.com/MottainaiCI/mottainai-cli/cmd"
+	common "github.com/MottainaiCI/mottainai-cli/common"
+	v "github.com/spf13/viper"
 )
 
 func main() {
-	app := cli.NewApp()
-	app.Name = "Mottainai CLI"
-	app.Copyright = "(c) 2017-2018 Mottainai"
-	app.Usage = "Command line interface for Mottainai clusters"
-	app.Version = setting.MOTTAINAI_VERSION
-	app.Commands = []cli.Command{
-		cmd.Task,
-		cmd.Node,
-		cmd.Namespace,
-		cmd.Storage,
-		cmd.Plan,
-	}
-	app.Flags = []cli.Flag{
-		cmd.StringFlag("master, m", "http://localhost:8080", "MottainaiCI webui url"),
-	}
 
-	app.Run(os.Args)
+	v.SetDefault("master", "http://localhost:8080")
+	v.SetDefault("profile", "")
+
+	// Define env variable
+	v.SetEnvPrefix(common.MCLI_ENV_PREFIX)
+	v.BindEnv("master")
+	v.BindEnv("profile")
+
+	// Set Config paths list
+	v.AddConfigPath(common.MCLI_LOCAL_PATH)
+	v.AddConfigPath(fmt.Sprintf("$HOME/%s", common.MCLI_HOME_PATH))
+
+	// Set config file name (without extension)
+	v.SetConfigName(common.MCLI_CONFIG_NAME)
+
+	v.SetTypeByDefaultValue(true)
+
+	cli.Execute()
 }
