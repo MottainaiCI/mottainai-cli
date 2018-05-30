@@ -36,10 +36,9 @@ func newPlanRemoveCommand() *cobra.Command {
 		Short: "Remove a plan",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: replace this with NewClient(host) method
 			var fetcher *client.Fetcher
 
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
+			fetcher = client.NewClient(v.GetString("master"))
 
 			id := args[0]
 			if len(id) == 0 {

@@ -37,10 +37,9 @@ func newNamespaceCreateCommand() *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
 
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
+			fetcher = client.NewClient(v.GetString("master"))
 
 			ns := args[0]
 			if len(ns) == 0 {

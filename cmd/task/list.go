@@ -43,11 +43,9 @@ func newTaskListCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var quiet bool
-
-			// TODO: replace this with NewClient(host) method
 			var fetcher *client.Fetcher
 
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
+			fetcher = client.NewClient(v.GetString("master"))
 
 			var tlist []citasks.Task
 			fetcher.GetJSONOptions("/api/tasks", map[string]string{}, &tlist)

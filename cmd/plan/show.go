@@ -38,17 +38,14 @@ func newPlanShowCommand() *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var t citasks.Plan
-
-			// TODO: replace this with NewClient(host) method
 			var fetcher *client.Fetcher
-
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a plan id")
 			}
 
+			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.GetJSONOptions("/api/tasks/plan/"+id, map[string]string{}, &t)
 			b, err := json.MarshalIndent(t, "", "  ")
 			if err != nil {

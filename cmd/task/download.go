@@ -34,9 +34,7 @@ func newTaskDownloadCommand() *cobra.Command {
 		Short: "Download task artefacts",
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
 
 			id := args[0]
 			target := args[1]
@@ -44,6 +42,7 @@ func newTaskDownloadCommand() *cobra.Command {
 				log.Fatalln("You need to define a task id and a target")
 			}
 
+			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.DownloadArtefactsFromTask(id, target)
 		},
 	}

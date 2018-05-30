@@ -34,9 +34,8 @@ func newNamespaceDownloadCommand() *cobra.Command {
 		Short: "Download namespace artefacts",
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
+			fetcher = client.NewClient(v.GetString("master"))
 
 			ns := args[0]
 			target := args[1]

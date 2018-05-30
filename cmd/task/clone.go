@@ -36,16 +36,14 @@ func newTaskCloneCommand() *cobra.Command {
 		Short: "clone a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
-
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")
 			}
 
+			fetcher = client.NewClient(v.GetString("master"))
 			res, err := fetcher.GetOptions("/api/tasks/clone/"+id, map[string]string{})
 			tools.CheckError(err)
 			fmt.Println(string(res))

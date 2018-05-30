@@ -44,12 +44,9 @@ func newPlanListCommand() *cobra.Command {
 			var tlist []citasks.Plan
 			var task_table [][]string
 			var quiet bool
-
-			// TODO: replace this with NewClient(host) method
 			var fetcher *client.Fetcher
 
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
-
+			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.GetJSONOptions("/api/tasks/planned", map[string]string{}, &tlist)
 
 			sort.Slice(tlist[:], func(i, j int) bool {

@@ -37,16 +37,14 @@ func newStorageCreateCommand() *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
-
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
 
 			storage := args[0]
 			if len(storage) == 0 {
 				log.Fatalln("You need to define a storage name")
 			}
 
+			fetcher = client.NewClient(v.GetString("master"))
 			res, err := fetcher.GetOptions("/api/storage/"+storage+"/create", map[string]string{})
 			tools.CheckError(err)
 			fmt.Println(string(res))

@@ -34,9 +34,7 @@ func newStorageUploadCommand() *cobra.Command {
 		Short: "Upload file to a storage",
 		Args:  cobra.RangeArgs(3, 3),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
 
 			storage := args[0]
 			file := args[1]
@@ -45,6 +43,7 @@ func newStorageUploadCommand() *cobra.Command {
 				log.Fatalln("You need to define a storage id, a file and a target storage path.")
 			}
 
+			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.UploadStorageFile(storage, file, path)
 		},
 	}

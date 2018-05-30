@@ -36,10 +36,6 @@ func newTaskInspectCommand() *cobra.Command {
 		Short: "Inspect a task for debugging",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: replace this with NewClient(host) method from mottainai-server
-			//var fetcher *client.Fetcher
-			//fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
-
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")
@@ -48,15 +44,7 @@ func newTaskInspectCommand() *cobra.Command {
 			fetcher := client.NewFetcher(id)
 			fetcher.BaseURL = v.GetString("master")
 
-			//fetcher.Doc(id)
-
 			th := citasks.DefaultTaskHandler()
-
-			// TODO: Fix this
-			// github.com/MottainaiCI/mottainai-cli/cmd/task
-			// cmd/task/inspect.go:51:29: cannot use fetcher
-			// (type *"github.com/MottainaiCI/mottainai-cli/vendor/github.com/MottainaiCI/mottainai-server/pkg/client".Fetcher)
-			// as type *"github.com/MottainaiCI/mottainai-server/pkg/client".Fetcher in argument to th.FetchTask
 
 			task_info := th.FetchTask(fetcher)
 			fmt.Println(task_info)

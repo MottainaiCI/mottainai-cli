@@ -39,12 +39,9 @@ func newNodeListCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var n []nodes.Node
 			var node_table [][]string
-
-			// TODO: replace this with NewClient(host) method
 			var fetcher *client.Fetcher
 
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
-
+			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.GetJSONOptions("/api/nodes", map[string]string{}, &n)
 
 			for _, i := range n {

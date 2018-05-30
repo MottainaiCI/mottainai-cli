@@ -35,14 +35,13 @@ func newTaskLogCommand() *cobra.Command {
 		Short: "Show log of a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")
 			}
+			fetcher = client.NewClient(v.GetString("master"))
 			buff, err := fetcher.GetOptions("/api/tasks/stream_output/"+id+"/0", map[string]string{})
 			if err != nil {
 				panic(err)

@@ -39,11 +39,10 @@ func newPlanCreateCommand() *cobra.Command {
 		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
 			var jsonfile string
 
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
+			fetcher = client.NewClient(v.GetString("master"))
 
 			dat := make(map[string]interface{})
 

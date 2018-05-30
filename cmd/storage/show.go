@@ -35,16 +35,14 @@ func newStorageShowCommand() *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var tlist []string
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
-
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
 
 			storage := args[0]
 			if len(storage) == 0 {
 				log.Fatalln("You need to define a storage id")
 			}
 
+			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.GetJSONOptions("/api/storage/"+storage+"/list", map[string]string{}, &tlist)
 			for _, i := range tlist {
 				log.Println("- " + i)

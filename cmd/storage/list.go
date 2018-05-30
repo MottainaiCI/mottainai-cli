@@ -40,12 +40,9 @@ func newStorageListCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var n []storage.Storage
 			var storage_table [][]string
-
-			// TODO: replace this with NewClient(host) method
 			var fetcher *client.Fetcher
 
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
-
+			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.GetJSONOptions("/api/storage/list", map[string]string{}, &n)
 
 			log.Println("Available storages: ")

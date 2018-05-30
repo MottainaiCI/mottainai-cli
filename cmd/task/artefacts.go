@@ -35,11 +35,8 @@ func newTaskArtefactsCommand() *cobra.Command {
 		Short: "Show artefacts of a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: replace this with NewClient(host) method from mottainai-server
 			var fetcher *client.Fetcher
 			var tlist []string
-
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
 
 			id := args[0]
 			if len(id) == 0 {
@@ -47,6 +44,7 @@ func newTaskArtefactsCommand() *cobra.Command {
 			}
 
 			fmt.Println("Artefacts for:", id)
+			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.GetJSONOptions("/api/tasks/"+id+"/artefacts", map[string]string{}, &tlist)
 
 			for _, i := range tlist {

@@ -37,11 +37,9 @@ func newNamespaceListCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var tlist []string
 			var ns_table [][]string
-
-			// TODO: replace this with NewClient(host) method
 			var fetcher *client.Fetcher
 
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
+			fetcher = client.NewClient(v.GetString("master"))
 
 			fetcher.GetJSONOptions("/api/namespace/list", map[string]string{}, &tlist)
 

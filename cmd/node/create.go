@@ -35,10 +35,9 @@ func newNodeCreateCommand() *cobra.Command {
 		Short: "Create a new node",
 		Args:  cobra.OnlyValidArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			// TODO: replace this with NewClient(host) method
 			var fetcher *client.Fetcher
 
-			fetcher = &client.Fetcher{BaseURL: v.GetString("master")}
+			fetcher = client.NewClient(v.GetString("master"))
 
 			res, err := fetcher.GetOptions("/api/nodes/add", map[string]string{})
 			tools.CheckError(err)
