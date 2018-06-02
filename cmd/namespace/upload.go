@@ -21,26 +21,32 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package namespace
 
 import (
-	"github.com/spf13/cobra"
+	"log"
+
+	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	cobra "github.com/spf13/cobra"
+	v "github.com/spf13/viper"
 )
 
-func NewNamespaceCommand() *cobra.Command {
-
+func newNamespaceUploadCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "namespace [command] [OPTIONS]",
-		Short: "Manage namespaces",
-	}
+		Use:   "upload <namespace> <file> <storage-path> [OPTIONS]",
+		Short: "Upload file to a namespace",
+		Args:  cobra.RangeArgs(3, 3),
+		Run: func(cmd *cobra.Command, args []string) {
+			var fetcher *client.Fetcher
 
-	cmd.AddCommand(
-		newNamespaceCloneCommand(),
-		newNamespaceCreateCommand(),
-		newNamespaceDeleteCommand(),
-		newNamespaceDownloadCommand(),
-		newNamespaceListCommand(),
-		newNamespaceShowCommand(),
-		newNamespaceTagCommand(),
-		newNamespaceUploadCommand(),
-	)
+			storage := args[0]
+			file := args[1]
+			path := args[2]
+			if len(storage) == 0 || len(file) == 0 || len(path) == 0 {
+				log.Fatalln("You need to define a storage id, a file and a target storage path.")
+			}
+
+			fetcher = client.NewClient(v.GetString("master"))
+			fetcher.UploadNamespaceFile(storage, file, path)
+		},
+	}
 
 	return cmd
 }
