@@ -41,6 +41,12 @@ func newPlanCreateCommand() *cobra.Command {
 			var err error
 			var fetcher *client.Fetcher
 			var jsonfile string
+			var value string
+			var flagsName []string = []string{
+				"script", "storage", "source", "directory", "task", "image",
+				"namespace", "storage_path", "artefact_path", "tag_namespace",
+				"prune", "queue", "cache_image", "planned",
+			}
 
 			fetcher = client.NewClient(v.GetString("master"))
 
@@ -55,20 +61,13 @@ func newPlanCreateCommand() *cobra.Command {
 				if err := json.Unmarshal(content, &dat); err != nil {
 					panic(err)
 				}
-			} else {
-				var value string
-				var flagsName []string = []string{
-					"script", "storage", "source", "directory", "task", "image",
-					"namespace", "storage_path", "artefact_path", "tag_namespace",
-					"prune", "queue", "cache_image", "planned",
-				}
+			}
 
-				for _, n := range flagsName {
-					if cmd.Flag(n).Changed {
-						value, err = cmd.Flags().GetString(n)
-						tools.CheckError(err)
-						dat[n] = value
-					}
+			for _, n := range flagsName {
+				if cmd.Flag(n).Changed {
+					value, err = cmd.Flags().GetString(n)
+					tools.CheckError(err)
+					dat[n] = value
 				}
 			}
 
