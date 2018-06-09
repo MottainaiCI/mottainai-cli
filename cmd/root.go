@@ -26,7 +26,6 @@ import (
 	//	"reflect"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	namespace "github.com/MottainaiCI/mottainai-cli/cmd/namespace"
 	node "github.com/MottainaiCI/mottainai-cli/cmd/node"
@@ -112,8 +111,8 @@ func init() {
 	pflags.StringP("master", "m", "http://localhost:8080", "MottainaiCI webUI URL")
 	pflags.StringP("profile", "p", "", "Use specific profile for call API.")
 
-	viper.BindPFlag("master", rootCmd.PersistentFlags().Lookup("master"))
-	viper.BindPFlag("profile", rootCmd.PersistentFlags().Lookup("profile"))
+	v.BindPFlag("master", rootCmd.PersistentFlags().Lookup("master"))
+	v.BindPFlag("profile", rootCmd.PersistentFlags().Lookup("profile"))
 
 	rootCmd.AddCommand(
 		task.NewTaskCommand(),
