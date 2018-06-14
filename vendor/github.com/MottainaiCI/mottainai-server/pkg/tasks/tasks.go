@@ -27,12 +27,14 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"time"
 
 	"github.com/MottainaiCI/mottainai-server/pkg/namespace"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	"github.com/MottainaiCI/mottainai-server/pkg/utils"
 	flock "github.com/theckman/go-flock"
 )
 
@@ -59,6 +61,7 @@ type Task struct {
 	RootTask     string `json:"root_task" form:"root_task"`
 	Prune        string `json:"prune" form:"prune"`
 	CacheImage   string `json:"cache_image" form:"cache_image"`
+	CacheClean   string `json:"cache_clean" form:"cache_clean"`
 
 	TagNamespace string `json:"tag_namespace" form:"tag_namespace"`
 
@@ -271,6 +274,14 @@ func (t *Task) IsDone() bool {
 	return false
 }
 
+func (t *Task) WantsClean() bool {
+	if len(t.CacheClean) > 0 {
+		return true
+	}
+
+	return false
+}
+
 func (t *Task) IsSuccess() bool {
 	if t.ExitStatus == "0" {
 		return true
@@ -289,6 +300,10 @@ func (t *Task) HandleStatus() {
 
 		t.Done()
 	}
+}
+
+func (t *Task) Artefacts() []string {
+	return utils.TreeList(filepath.Join(setting.Configuration.ArtefactPath, strconv.Itoa(t.ID)))
 }
 
 func (t *Task) Done() {
