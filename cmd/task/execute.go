@@ -54,7 +54,7 @@ func newTaskExecuteCommand() *cobra.Command {
 			var fn func(string) (int, error)
 
 			fn = citasks.DefaultTaskHandler().Handler(t.TaskName)
-			setting.GenDefault()
+			setting.Configuration.GenDefault()
 			setting.Configuration.AppURL = v.GetString("master")
 			fn(id)
 		},
