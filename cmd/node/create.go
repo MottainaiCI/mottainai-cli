@@ -25,8 +25,9 @@ import (
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newNodeCreateCommand() *cobra.Command {
@@ -36,6 +37,7 @@ func newNodeCreateCommand() *cobra.Command {
 		Args:  cobra.OnlyValidArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewClient(v.GetString("master"))
 

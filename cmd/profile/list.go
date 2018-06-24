@@ -26,9 +26,10 @@ import (
 
 	common "github.com/MottainaiCI/mottainai-cli/common"
 	tools "github.com/MottainaiCI/mottainai-cli/common"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newProfileListCommand() *cobra.Command {
@@ -38,6 +39,7 @@ func newProfileListCommand() *cobra.Command {
 		Args:  cobra.OnlyValidArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
+			var v *viper.Viper = setting.Configuration.Viper
 
 			if v.Get("profiles") == nil {
 				fmt.Println("No profiles available.")

@@ -27,7 +27,7 @@ import (
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newTaskExecuteCommand() *cobra.Command {
@@ -37,6 +37,7 @@ func newTaskExecuteCommand() *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewClient(v.GetString("master"))
 

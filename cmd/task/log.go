@@ -25,8 +25,9 @@ import (
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newTaskLogCommand() *cobra.Command {
@@ -36,6 +37,7 @@ func newTaskLogCommand() *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 
 			id := args[0]
 			if len(id) == 0 {

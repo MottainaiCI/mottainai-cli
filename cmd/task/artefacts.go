@@ -25,8 +25,9 @@ import (
 	"log"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newTaskArtefactsCommand() *cobra.Command {
@@ -36,6 +37,7 @@ func newTaskArtefactsCommand() *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 			var tlist []string
 
 			id := args[0]

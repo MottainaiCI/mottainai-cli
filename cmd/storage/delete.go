@@ -26,8 +26,9 @@ import (
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newStorageDeleteCommand() *cobra.Command {
@@ -38,6 +39,7 @@ func newStorageDeleteCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 
 			storage := args[0]
 			if len(storage) == 0 {

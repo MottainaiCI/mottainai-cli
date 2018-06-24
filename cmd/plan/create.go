@@ -27,8 +27,9 @@ import (
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newPlanCreateCommand() *cobra.Command {
@@ -42,6 +43,7 @@ func newPlanCreateCommand() *cobra.Command {
 			var fetcher *client.Fetcher
 			var jsonfile string
 			var value string
+			var v *viper.Viper = setting.Configuration.Viper
 			var flagsName []string = []string{
 				"script", "storage", "source", "directory", "task", "image",
 				"namespace", "storage_path", "artefact_path", "tag_namespace",

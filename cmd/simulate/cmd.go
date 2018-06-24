@@ -18,36 +18,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package namespace
+package simulate
 
 import (
-	"log"
-
-	client "github.com/MottainaiCI/mottainai-server/pkg/client"
-	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
-	cobra "github.com/spf13/cobra"
-	viper "github.com/spf13/viper"
+	"github.com/spf13/cobra"
 )
 
-func newNamespaceDownloadCommand() *cobra.Command {
+func NewSimulateCommand() *cobra.Command {
+
 	var cmd = &cobra.Command{
-		Use:   "download <namespace> <target> [OPTIONS]",
-		Short: "Download namespace artefacts",
-		Args:  cobra.RangeArgs(2, 2),
-		Run: func(cmd *cobra.Command, args []string) {
-			var v *viper.Viper = setting.Configuration.Viper
-			var fetcher *client.Fetcher
-			fetcher = client.NewClient(v.GetString("master"))
-
-			ns := args[0]
-			target := args[1]
-			if len(ns) == 0 || len(target) == 0 {
-				log.Fatalln("You need to define a namespace and a target")
-			}
-
-			fetcher.DownloadArtefactsFromNamespace(ns, target)
-		},
+		Use:   "simulate [command] [OPTIONS]",
+		Short: "Simulate Agent Command",
 	}
+
+	cmd.AddCommand(
+		newSimulatePrintCommand(),
+	)
 
 	return cmd
 }

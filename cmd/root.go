@@ -31,11 +31,12 @@ import (
 	node "github.com/MottainaiCI/mottainai-cli/cmd/node"
 	plan "github.com/MottainaiCI/mottainai-cli/cmd/plan"
 	profile "github.com/MottainaiCI/mottainai-cli/cmd/profile"
+	simulate "github.com/MottainaiCI/mottainai-cli/cmd/simulate"
 	storage "github.com/MottainaiCI/mottainai-cli/cmd/storage"
 	task "github.com/MottainaiCI/mottainai-cli/cmd/task"
 	common "github.com/MottainaiCI/mottainai-cli/common"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 const (
@@ -65,11 +66,11 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 	},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-
 		var err error
+		var v *viper.Viper = setting.Configuration.Viper
 
-		// Try to read configuration files
-		err = v.ReadInConfig()
+		// Parse configuration file
+		err = setting.Configuration.Unmarshal()
 		// TODO: Add loglevel in debug that said no config file processed.
 		// if err != nil {
 		//	fmt.Println(err)
@@ -107,6 +108,7 @@ var rootCmd = &cobra.Command{
 func init() {
 
 	var pflags = rootCmd.PersistentFlags()
+	v := setting.Configuration.Viper
 
 	pflags.StringP("master", "m", "http://localhost:8080", "MottainaiCI webUI URL")
 	pflags.StringP("profile", "p", "", "Use specific profile for call API.")
@@ -121,6 +123,7 @@ func init() {
 		plan.NewPlanCommand(),
 		profile.NewProfileCommand(),
 		storage.NewStorageCommand(),
+		simulate.NewSimulateCommand(),
 	)
 }
 

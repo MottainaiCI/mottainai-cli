@@ -27,8 +27,9 @@ import (
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newTaskCreateCommand() *cobra.Command {
@@ -41,6 +42,7 @@ func newTaskCreateCommand() *cobra.Command {
 			var err error
 			var fetcher *client.Fetcher
 			var jsonfile string
+			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewClient(v.GetString("master"))
 

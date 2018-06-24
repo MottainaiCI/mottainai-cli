@@ -24,8 +24,9 @@ import (
 	"log"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newStorageUploadCommand() *cobra.Command {
@@ -35,6 +36,7 @@ func newStorageUploadCommand() *cobra.Command {
 		Args:  cobra.RangeArgs(3, 3),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 
 			storage := args[0]
 			file := args[1]

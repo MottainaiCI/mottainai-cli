@@ -24,9 +24,10 @@ import (
 	"os"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newNamespaceListCommand() *cobra.Command {
@@ -38,6 +39,7 @@ func newNamespaceListCommand() *cobra.Command {
 			var tlist []string
 			var ns_table [][]string
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewClient(v.GetString("master"))
 

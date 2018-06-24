@@ -25,9 +25,10 @@ import (
 	"log"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newTaskInspectCommand() *cobra.Command {
@@ -36,6 +37,8 @@ func newTaskInspectCommand() *cobra.Command {
 		Short: "Inspect a task for debugging",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
+			var v *viper.Viper = setting.Configuration.Viper
+
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")

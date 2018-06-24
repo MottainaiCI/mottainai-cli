@@ -26,9 +26,10 @@ import (
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newNodeListCommand() *cobra.Command {
@@ -40,6 +41,7 @@ func newNodeListCommand() *cobra.Command {
 			var n []nodes.Node
 			var node_table [][]string
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.GetJSONOptions("/api/nodes", map[string]string{}, &n)

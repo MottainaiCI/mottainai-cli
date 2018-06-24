@@ -25,8 +25,9 @@ import (
 
 	common "github.com/MottainaiCI/mottainai-cli/common"
 	tools "github.com/MottainaiCI/mottainai-cli/common"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newProfileRemoveCommand() *cobra.Command {
@@ -39,6 +40,7 @@ func newProfileRemoveCommand() *cobra.Command {
 			var name, f string
 			var conf common.ProfileConf
 			var p *common.Profile
+			var v *viper.Viper = setting.Configuration.Viper
 
 			name = args[0]
 
@@ -65,7 +67,7 @@ func newProfileRemoveCommand() *cobra.Command {
 
 			// Create new viper configuration to avoid
 			// write of command line arguments/settings
-			viper := v.New()
+			viper := viper.New()
 			viper.SetConfigType("yaml")
 			viper.Set("profiles", conf.Profiles)
 

@@ -24,8 +24,9 @@ import (
 	"log"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newNamespaceShowCommand() *cobra.Command {
@@ -36,6 +37,7 @@ func newNamespaceShowCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var tlist []string
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewClient(v.GetString("master"))
 

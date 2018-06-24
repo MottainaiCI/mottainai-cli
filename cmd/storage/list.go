@@ -26,10 +26,11 @@ import (
 	"strconv"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	storage "github.com/MottainaiCI/mottainai-server/pkg/storage"
 	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
-	v "github.com/spf13/viper"
+	viper "github.com/spf13/viper"
 )
 
 func newStorageListCommand() *cobra.Command {
@@ -41,6 +42,7 @@ func newStorageListCommand() *cobra.Command {
 			var n []storage.Storage
 			var storage_table [][]string
 			var fetcher *client.Fetcher
+			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewClient(v.GetString("master"))
 			fetcher.GetJSONOptions("/api/storage/list", map[string]string{}, &n)

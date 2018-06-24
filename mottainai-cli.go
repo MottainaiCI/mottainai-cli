@@ -23,18 +23,23 @@ import (
 
 	cli "github.com/MottainaiCI/mottainai-cli/cmd"
 	common "github.com/MottainaiCI/mottainai-cli/common"
-	v "github.com/spf13/viper"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 )
 
 func main() {
 
+	v := setting.Configuration.Viper
 	v.SetDefault("master", "http://localhost:8080")
 	v.SetDefault("profile", "")
+	// Temporary for config print
+	v.SetDefault("config", "")
+
+	// Initialize Default Viper Configuration
+	setting.GenDefault(v)
 
 	// Define env variable
 	v.SetEnvPrefix(common.MCLI_ENV_PREFIX)
-	v.BindEnv("master")
-	v.BindEnv("profile")
+	v.AutomaticEnv()
 
 	// Set Config paths list
 	v.AddConfigPath(common.MCLI_LOCAL_PATH)
