@@ -28,7 +28,7 @@
     "pkg/tasks",
     "pkg/utils"
   ]
-  revision = "160a2353b0f6ee49f0b105553eb02bfacf2d6171"
+  revision = "97684fafb6fe5e9361facd397f5cd662cc840eab"
 
 [[projects]]
   branch = "master"
@@ -47,7 +47,21 @@
   packages = [
     "v1",
     "v1/backends",
+    "v1/backends/amqp",
+    "v1/backends/dynamodb",
+    "v1/backends/eager",
+    "v1/backends/iface",
+    "v1/backends/memcache",
+    "v1/backends/mongo",
+    "v1/backends/redis",
+    "v1/backends/result",
     "v1/brokers",
+    "v1/brokers/amqp",
+    "v1/brokers/eager",
+    "v1/brokers/errs",
+    "v1/brokers/iface",
+    "v1/brokers/redis",
+    "v1/brokers/sqs",
     "v1/common",
     "v1/config",
     "v1/log",
@@ -55,11 +69,16 @@
     "v1/tasks",
     "v1/tracing"
   ]
-  revision = "6a249f4becc93c9938a1cd85831e6efc3086100b"
-  version = "v1.2.2"
+  revision = "480748c75ae7f13e96dda79b6ef5c2add6df5b8c"
+  version = "v1.3.7"
 
 [[projects]]
   branch = "master"
+  name = "github.com/RichardKnop/redsync"
+  packages = ["."]
+  revision = "54b27db64c180751e7049321a2e109ff220ccdcc"
+
+[[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -72,6 +91,7 @@
     "aws/credentials/ec2rolecreds",
     "aws/credentials/endpointcreds",
     "aws/credentials/stscreds",
+    "aws/csm",
     "aws/defaults",
     "aws/ec2metadata",
     "aws/endpoints",
@@ -82,15 +102,21 @@
     "internal/sdkrand",
     "internal/shareddefaults",
     "private/protocol",
+    "private/protocol/json/jsonutil",
+    "private/protocol/jsonrpc",
     "private/protocol/query",
     "private/protocol/query/queryutil",
     "private/protocol/rest",
     "private/protocol/xml/xmlutil",
+    "service/dynamodb",
+    "service/dynamodb/dynamodbattribute",
+    "service/dynamodb/dynamodbiface",
     "service/sqs",
     "service/sqs/sqsiface",
     "service/sts"
   ]
-  revision = "afeff3d347c1929b452f2d318f79741510888734"
+  revision = "e4f914808a9655ef3220bb0082002239cc7f3561"
+  version = "v1.14.19"
 
 [[projects]]
   branch = "master"
@@ -205,6 +231,15 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/gomodule/redigo"
+  packages = [
+    "internal",
+    "redis"
+  ]
+  revision = "9c11da706d9b7902c6da69c592f75637793fe121"
+  version = "v2.0.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -239,10 +274,10 @@
   revision = "0b12d6b5"
 
 [[projects]]
-  branch = "master"
   name = "github.com/kelseyhightower/envconfig"
   packages = ["."]
-  revision = "dd1402a4d99de9ac2f396cd6fcb957bc2c695ec1"
+  revision = "f611eb38b3875cc3bd991ca91c51d06446afa14c"
+  version = "v1.3.0"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -351,10 +386,10 @@
   version = "v0.8.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/satori/go.uuid"
   packages = ["."]
-  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
-  version = "v1.2.0"
+  revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
