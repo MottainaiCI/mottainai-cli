@@ -104,7 +104,7 @@ func (c *Config) GenDefault() {
 func GenDefault(viper *v.Viper) {
 
 	viper.SetDefault("webui_protocol", "http")
-	viper.SetDefault("webui_url", "http://127.0.0.1:9090/")
+	viper.SetDefault("webui_url", "http://127.0.0.1:9090")
 	viper.SetDefault("webui_listenaddress", "127.0.0.1")
 	viper.SetDefault("webui_port", "9090")
 	viper.SetDefault("application_name", "Mottainai")
@@ -210,7 +210,7 @@ broker_exchange: %s
 broker_exchange_type: %s
 broker_binding_key: %s
 agent_concurrency: %d
-queues: %s
+queues: %v
 agent_key: ***************
 
 work_dir: %s
