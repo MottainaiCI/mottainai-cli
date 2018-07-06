@@ -47,7 +47,7 @@ func newPlanShowCommand() *cobra.Command {
 				log.Fatalln("You need to define a plan id")
 			}
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 			fetcher.GetJSONOptions("/api/tasks/plan/"+id, map[string]string{}, &t)
 			b, err := json.MarshalIndent(t, "", "  ")
 			if err != nil {

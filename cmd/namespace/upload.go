@@ -45,7 +45,7 @@ func newNamespaceUploadCommand() *cobra.Command {
 				log.Fatalln("You need to define a storage id, a file and a target storage path.")
 			}
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 			fetcher.UploadNamespaceFile(storage, file, path)
 		},
 	}

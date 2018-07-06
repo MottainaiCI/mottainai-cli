@@ -38,7 +38,7 @@ func newStorageDownloadCommand() *cobra.Command {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 
 			storage := args[0]
 			target := args[1]

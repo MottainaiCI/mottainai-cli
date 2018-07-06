@@ -41,7 +41,7 @@ func newNamespaceDeleteCommand() *cobra.Command {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 
 			ns := args[0]
 			if len(ns) == 0 {

@@ -46,7 +46,7 @@ func newTaskArtefactsCommand() *cobra.Command {
 			}
 
 			fmt.Println("Artefacts for:", id)
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 			fetcher.GetJSONOptions("/api/tasks/"+id+"/artefacts", map[string]string{}, &tlist)
 
 			for _, i := range tlist {

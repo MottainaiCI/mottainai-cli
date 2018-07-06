@@ -34,6 +34,8 @@ import (
 	simulate "github.com/MottainaiCI/mottainai-cli/cmd/simulate"
 	storage "github.com/MottainaiCI/mottainai-cli/cmd/storage"
 	task "github.com/MottainaiCI/mottainai-cli/cmd/task"
+	token "github.com/MottainaiCI/mottainai-cli/cmd/token"
+	user "github.com/MottainaiCI/mottainai-cli/cmd/user"
 	common "github.com/MottainaiCI/mottainai-cli/common"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	viper "github.com/spf13/viper"
@@ -111,17 +113,22 @@ func init() {
 	v := setting.Configuration.Viper
 
 	pflags.StringP("master", "m", "http://localhost:8080", "MottainaiCI webUI URL")
+	pflags.StringP("apikey", "k", "fb4h3bhgv4421355", "Mottainai API key")
+
 	pflags.StringP("profile", "p", "", "Use specific profile for call API.")
 
 	v.BindPFlag("master", rootCmd.PersistentFlags().Lookup("master"))
+	v.BindPFlag("apikey", rootCmd.PersistentFlags().Lookup("apikey"))
 	v.BindPFlag("profile", rootCmd.PersistentFlags().Lookup("profile"))
 
 	rootCmd.AddCommand(
 		task.NewTaskCommand(),
 		node.NewNodeCommand(),
+		token.NewTokenCommand(),
 		namespace.NewNamespaceCommand(),
 		plan.NewPlanCommand(),
 		profile.NewProfileCommand(),
+		user.NewUserCommand(),
 		storage.NewStorageCommand(),
 		simulate.NewSimulateCommand(),
 	)

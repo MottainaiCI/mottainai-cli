@@ -18,40 +18,67 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package task
+package token
 
 import (
 	"fmt"
-	"log"
+	"os"
+	"strconv"
 
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	token "github.com/MottainaiCI/mottainai-server/pkg/token"
+	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
 
-func newTaskStartCommand() *cobra.Command {
+func newTokenListCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "start <taskid> [OPTIONS]",
-		Short: "Start a task",
-		Args:  cobra.RangeArgs(1, 1),
+		Use:   "list [OPTIONS]",
+		Short: "List tokens",
+		Args:  cobra.OnlyValidArgs,
 		Run: func(cmd *cobra.Command, args []string) {
+			var err error
+			var tlist []token.Token
+			var task_table [][]string
+			var quiet bool
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher.GetJSONOptions("/api/token", map[string]string{}, &tlist)
 
-			id := args[0]
-			if len(id) == 0 {
-				log.Fatalln("You need to define a task id")
+			quiet, err = cmd.Flags().GetBool("quiet")
+			tools.CheckError(err)
+
+			if quiet {
+				for _, i := range tlist {
+					fmt.Println(i.ID)
+				}
+				return
 			}
-			res, err := fetcher.GetOptions("/api/tasks/start/"+id, map[string]string{})
-			if err != nil {
-				panic(err)
+
+			for _, i := range tlist {
+				task_table = append(task_table, []string{strconv.Itoa(i.ID), i.Key, i.UserId})
 			}
-			fmt.Println(string(res))
+
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+			table.SetCenterSeparator("|")
+			table.SetHeader([]string{"ID", "Key", "UserId"})
+
+			for _, v := range task_table {
+				table.Append(v)
+			}
+			table.Render()
+
 		},
 	}
+
+	var flags = cmd.Flags()
+	flags.BoolP("quiet", "q", false, "Quiet Output")
 
 	return cmd
 }

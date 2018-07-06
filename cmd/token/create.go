@@ -18,37 +18,34 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package task
+package token
 
 import (
 	"fmt"
-	"log"
 
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
 
-func newTaskStartCommand() *cobra.Command {
+func newTokenCreateCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "start <taskid> [OPTIONS]",
-		Short: "Start a task",
-		Args:  cobra.RangeArgs(1, 1),
+		Use:   "create [OPTIONS]",
+		Short: "Create a new token",
+		Args:  cobra.OnlyValidArgs,
+		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
+			var err error
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 
-			id := args[0]
-			if len(id) == 0 {
-				log.Fatalln("You need to define a task id")
-			}
-			res, err := fetcher.GetOptions("/api/tasks/start/"+id, map[string]string{})
-			if err != nil {
-				panic(err)
-			}
+			res, err := fetcher.GetOptions("/api/token/create", map[string]string{})
+			tools.CheckError(err)
+
 			fmt.Println(string(res))
 		},
 	}

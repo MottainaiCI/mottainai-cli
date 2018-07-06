@@ -18,22 +18,23 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package task
+package token
 
 import (
 	"fmt"
 	"log"
 
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
 
-func newTaskStartCommand() *cobra.Command {
+func newTokenRemoveCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "start <taskid> [OPTIONS]",
-		Short: "Start a task",
+		Use:   "remove <token-id> [OPTIONS]",
+		Short: "Remove a token",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
@@ -43,12 +44,12 @@ func newTaskStartCommand() *cobra.Command {
 
 			id := args[0]
 			if len(id) == 0 {
-				log.Fatalln("You need to define a task id")
+				log.Fatalln("You need to define a plan id")
 			}
-			res, err := fetcher.GetOptions("/api/tasks/start/"+id, map[string]string{})
-			if err != nil {
-				panic(err)
-			}
+
+			res, err := fetcher.GetOptions("/api/token/delete/"+id, map[string]string{})
+			tools.CheckError(err)
+
 			fmt.Println(string(res))
 		},
 	}

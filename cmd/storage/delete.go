@@ -46,7 +46,7 @@ func newStorageDeleteCommand() *cobra.Command {
 				log.Fatalln("You need to define a storage id")
 			}
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 			res, err := fetcher.GetOptions("/api/storage/"+storage+"/delete", map[string]string{})
 			tools.CheckError(err)
 			fmt.Println(string(res))

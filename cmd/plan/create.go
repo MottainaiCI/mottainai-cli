@@ -50,7 +50,7 @@ func newPlanCreateCommand() *cobra.Command {
 				"prune", "queue", "cache_image", "planned",
 			}
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 
 			dat := make(map[string]interface{})
 

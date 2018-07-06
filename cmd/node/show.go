@@ -42,7 +42,7 @@ func newNodeShowCommand() *cobra.Command {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 
 			id := args[0]
 			if len(id) == 0 {

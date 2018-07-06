@@ -39,8 +39,8 @@ func newTaskExecuteCommand() *cobra.Command {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
-			fetcher = client.NewClient(v.GetString("master"))
-
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			setting.Configuration.ApiKey = v.GetString("apikey")
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")

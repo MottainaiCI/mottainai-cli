@@ -44,7 +44,7 @@ func newStorageShowCommand() *cobra.Command {
 				log.Fatalln("You need to define a storage id")
 			}
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 			fetcher.GetJSONOptions("/api/storage/"+storage+"/list", map[string]string{}, &tlist)
 			for _, i := range tlist {
 				log.Println("- " + i)

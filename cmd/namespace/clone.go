@@ -42,7 +42,7 @@ func newNamespaceCloneCommand() *cobra.Command {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 
 			ns_orig, err = cmd.Flags().GetString("from")
 			tools.CheckError(err)

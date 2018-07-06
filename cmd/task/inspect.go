@@ -44,7 +44,7 @@ func newTaskInspectCommand() *cobra.Command {
 				log.Fatalln("You need to define a task id")
 			}
 
-			fetcher := client.NewFetcher(id)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 			fetcher.BaseURL = v.GetString("master")
 
 			th := citasks.DefaultTaskHandler()

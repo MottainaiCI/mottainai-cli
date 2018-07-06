@@ -39,7 +39,7 @@ func newNodeCreateCommand() *cobra.Command {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 
 			res, err := fetcher.GetOptions("/api/nodes/add", map[string]string{})
 			tools.CheckError(err)

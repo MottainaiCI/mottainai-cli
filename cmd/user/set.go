@@ -18,40 +18,54 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package task
+package user
 
 import (
 	"fmt"
 	"log"
 
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
 
-func newTaskStartCommand() *cobra.Command {
+func newUserSetCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "start <taskid> [OPTIONS]",
-		Short: "Start a task",
-		Args:  cobra.RangeArgs(1, 1),
+		Use:   "set [OPTIONS]",
+		Short: "Set/unset admin flag to user",
+		Args:  cobra.OnlyValidArgs,
+		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
+			var err error
 			var fetcher *client.Fetcher
+			var res []byte
 			var v *viper.Viper = setting.Configuration.Viper
+			t, err := cmd.Flags().GetString("type")
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			if len(args) == 0 {
+				log.Fatalln("You need to define a user id")
+			}
 
 			id := args[0]
 			if len(id) == 0 {
-				log.Fatalln("You need to define a task id")
+				log.Fatalln("You need to define a user id")
 			}
-			res, err := fetcher.GetOptions("/api/tasks/start/"+id, map[string]string{})
-			if err != nil {
-				panic(err)
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+
+			if t == "admin" {
+				res, err = fetcher.GetOptions("/api/user/setadmin/"+id, map[string]string{})
+			} else if t == "user" {
+				res, err = fetcher.GetOptions("/api/user/unsetadmin/"+id, map[string]string{})
 			}
+
+			tools.CheckError(err)
 			fmt.Println(string(res))
 		},
 	}
+	var flags = cmd.Flags()
+	flags.String("type", "t", "Set the user id permission to the type ( e.g 'user' or 'admin')")
 
 	return cmd
 }

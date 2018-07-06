@@ -47,7 +47,7 @@ func newTaskListCommand() *cobra.Command {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
-			fetcher = client.NewClient(v.GetString("master"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 
 			var tlist []citasks.Task
 			fetcher.GetJSONOptions("/api/tasks", map[string]string{}, &tlist)

@@ -18,36 +18,24 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package task
+package token
 
 import (
-	"log"
-
-	client "github.com/MottainaiCI/mottainai-server/pkg/client"
-	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
-	cobra "github.com/spf13/cobra"
-	viper "github.com/spf13/viper"
+	"github.com/spf13/cobra"
 )
 
-func newTaskDownloadCommand() *cobra.Command {
+func NewTokenCommand() *cobra.Command {
+
 	var cmd = &cobra.Command{
-		Use:   "download <taskid> <target> [OPTIONS]",
-		Short: "Download task artefacts",
-		Args:  cobra.RangeArgs(2, 2),
-		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
-
-			id := args[0]
-			target := args[1]
-			if len(id) == 0 || len(target) == 0 {
-				log.Fatalln("You need to define a task id and a target")
-			}
-
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
-			fetcher.DownloadArtefactsFromTask(id, target)
-		},
+		Use:   "token [command] [OPTIONS]",
+		Short: "Manage tokens",
 	}
+
+	cmd.AddCommand(
+		newTokenCreateCommand(),
+		newTokenListCommand(),
+		newTokenRemoveCommand(),
+	)
 
 	return cmd
 }
