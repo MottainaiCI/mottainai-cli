@@ -27,6 +27,8 @@ import (
 	"errors"
 	"strconv"
 
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+
 	"github.com/MottainaiCI/mottainai-server/pkg/client"
 	machinery "github.com/RichardKnop/machinery/v1"
 )
@@ -89,7 +91,7 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 
 	var (
 		source        string
-		script        string
+		script        []string
 		directory     string
 		namespace     string
 		commit        string
@@ -118,6 +120,7 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 
 	binds = make([]string, 0)
 	environment = make([]string, 0)
+	script = make([]string, 0)
 
 	if arr, ok := t["binds"].([]interface{}); ok {
 		for _, v := range arr {
@@ -128,6 +131,12 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 	if arr, ok := t["environment"].([]interface{}); ok {
 		for _, v := range arr {
 			environment = append(environment, v.(string))
+		}
+	}
+
+	if arr, ok := t["script"].([]interface{}); ok {
+		for _, v := range arr {
+			script = append(script, v.(string))
 		}
 	}
 
@@ -143,9 +152,7 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 	if str, ok := t["source"].(string); ok {
 		source = str
 	}
-	if str, ok := t["script"].(string); ok {
-		script = str
-	}
+
 	if str, ok := t["directory"].(string); ok {
 		directory = str
 	}
@@ -255,6 +262,7 @@ func (h *TaskHandler) FetchTask(fetcher *client.Fetcher) Task {
 
 func HandleSuccess(docID string, result int) error {
 	fetcher := client.NewFetcher(docID)
+	fetcher.Token = setting.Configuration.ApiKey
 
 	fetcher.SetTaskField("exit_status", strconv.Itoa(result))
 	if result != 0 {
@@ -276,6 +284,7 @@ func HandleSuccess(docID string, result int) error {
 
 func HandleErr(errstring, docID string) error {
 	fetcher := client.NewFetcher(docID)
+	fetcher.Token = setting.Configuration.ApiKey
 
 	fetcher.AppendTaskOutput(errstring)
 	fetcher.SetTaskResult("error")

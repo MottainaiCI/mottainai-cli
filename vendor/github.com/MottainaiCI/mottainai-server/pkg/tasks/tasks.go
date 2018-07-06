@@ -24,6 +24,7 @@ package agenttasks
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -39,29 +40,29 @@ import (
 )
 
 type Task struct {
-	ID           int    `json:"ID"`
-	Source       string `json:"source" form:"source"`
-	Script       string `json:"script" form:"script"`
-	Directory    string `json:"directory" form:"directory"`
-	TaskName     string `json:"task" form:"task"`
-	Status       string `json:"status" form:"status"`
-	Output       string `json:"output" form:"output"`
-	Result       string `json:"result" form:"result"`
-	Namespace    string `json:"namespace" form:"namespace"`
-	Commit       string `json:"commit" form:"commit"`
-	PrivKey      string `json:"privkey" form:"privkey"`
-	AuthHosts    string `json:"authhosts" form:"authhosts"`
-	Node         int    `json:"nodeid" form:"nodeid"`
-	Owner        int    `json:"ownerid" form:"ownerid"`
-	Image        string `json:"image" form:"image"`
-	ExitStatus   string `json:"exit_status" form:"exit_status"`
-	Storage      string `json:"storage" form:"storage"`
-	ArtefactPath string `json:"artefact_path" form:"artefact_path"`
-	StoragePath  string `json:"storage_path" form:"storage_path"`
-	RootTask     string `json:"root_task" form:"root_task"`
-	Prune        string `json:"prune" form:"prune"`
-	CacheImage   string `json:"cache_image" form:"cache_image"`
-	CacheClean   string `json:"cache_clean" form:"cache_clean"`
+	ID           int      `json:"ID"`
+	Source       string   `json:"source" form:"source"`
+	Script       []string `json:"script" form:"script"`
+	Directory    string   `json:"directory" form:"directory"`
+	TaskName     string   `json:"task" form:"task"`
+	Status       string   `json:"status" form:"status"`
+	Output       string   `json:"output" form:"output"`
+	Result       string   `json:"result" form:"result"`
+	Namespace    string   `json:"namespace" form:"namespace"`
+	Commit       string   `json:"commit" form:"commit"`
+	PrivKey      string   `json:"privkey" form:"privkey"`
+	AuthHosts    string   `json:"authhosts" form:"authhosts"`
+	Node         int      `json:"nodeid" form:"nodeid"`
+	Owner        int      `json:"ownerid" form:"ownerid"`
+	Image        string   `json:"image" form:"image"`
+	ExitStatus   string   `json:"exit_status" form:"exit_status"`
+	Storage      string   `json:"storage" form:"storage"`
+	ArtefactPath string   `json:"artefact_path" form:"artefact_path"`
+	StoragePath  string   `json:"storage_path" form:"storage_path"`
+	RootTask     string   `json:"root_task" form:"root_task"`
+	Prune        string   `json:"prune" form:"prune"`
+	CacheImage   string   `json:"cache_image" form:"cache_image"`
+	CacheClean   string   `json:"cache_clean" form:"cache_clean"`
 
 	TagNamespace string `json:"tag_namespace" form:"tag_namespace"`
 
@@ -116,16 +117,16 @@ func (t *Task) ToMap() map[string]interface{} {
 	return ts
 }
 
-func FromFile(file string) *Task {
+func FromFile(file string) (*Task, error) {
 	var t *Task
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
-		panic(err)
+		return t, err
 	}
 	if err := json.Unmarshal(content, &t); err != nil {
-		panic(err)
+		return t, err
 	}
-	return t
+	return t, nil
 }
 
 func (t *Task) Reset() {
@@ -293,13 +294,13 @@ func (t *Task) IsSuccess() bool {
 }
 
 func (t *Task) HandleStatus() {
+	fmt.Println("Handlestatus called")
 	if t.Status == "done" {
 		if t.ExitStatus == "0" {
 			t.OnSuccess()
 		} else {
 			t.OnFailure()
 		}
-
 		t.Done()
 	}
 }
@@ -309,15 +310,18 @@ func (t *Task) Artefacts() []string {
 }
 
 func (t *Task) Done() {
+	fmt.Println("Build done")
 }
 
 func (t *Task) OnFailure() {
+	fmt.Println("Build failed")
 
 }
 
 func (t *Task) OnSuccess() {
-	if len(t.TagNamespace) > 0 {
+	fmt.Println("Build succeeded")
 
+	if len(t.TagNamespace) > 0 {
 		ns := namespace.NewFromMap(map[string]interface{}{"name": t.TagNamespace, "path": t.TagNamespace})
 		ns.Tag(t.ID)
 	}

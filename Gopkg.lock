@@ -26,9 +26,17 @@
     "pkg/settings",
     "pkg/storage",
     "pkg/tasks",
+    "pkg/token",
+    "pkg/user",
     "pkg/utils"
   ]
-  revision = "97684fafb6fe5e9361facd397f5cd662cc840eab"
+  revision = "5fb0bb0c9ef33ed76e708496c30d49755753e781"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/MottainaiCI/passlib"
+  packages = ["."]
+  revision = "f6527380e5ed8dc116bebcf3463ca46951b450b2"
 
 [[projects]]
   branch = "master"
@@ -392,6 +400,12 @@
   revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
 
 [[projects]]
+  name = "github.com/sethvargo/go-password"
+  packages = ["password"]
+  revision = "d207206009266fab3e355f1a0488b47ac24139c7"
+  version = "v0.1.1"
+
+[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
@@ -451,7 +465,15 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
+  packages = [
+    "argon2",
+    "bcrypt",
+    "blake2b",
+    "blowfish",
+    "pbkdf2",
+    "scrypt",
+    "ssh/terminal"
+  ]
   revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
 
 [[projects]]
@@ -464,6 +486,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = [
+    "cpu",
     "unix",
     "windows"
   ]
@@ -487,6 +510,36 @@
   packages = ["."]
   revision = "3bc2eaba5fa35df0338549cc1180dc45f6fc2a16"
   version = "v1.2.0"
+
+[[projects]]
+  name = "gopkg.in/hlandau/easymetric.v1"
+  packages = ["cexp"]
+  revision = "1c173222e345c2ba115e0f483821c6da2d3b0fa9"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "gopkg.in/hlandau/measurable.v1"
+  packages = ["."]
+  revision = "d96a009bd9bda94dd1294105e67e8c1794e533d3"
+  version = "v1.0.1"
+
+[[projects]]
+  name = "gopkg.in/hlandau/passlib.v1"
+  packages = [
+    "abstract",
+    "hash/argon2",
+    "hash/argon2/raw",
+    "hash/bcrypt",
+    "hash/bcryptsha256",
+    "hash/pbkdf2",
+    "hash/pbkdf2/raw",
+    "hash/scrypt",
+    "hash/scrypt/raw",
+    "hash/sha2crypt",
+    "hash/sha2crypt/raw"
+  ]
+  revision = "b833d45cabf4a5151d9f955811216c6e7e377537"
+  version = "v1.0.10"
 
 [[projects]]
   branch = "v2"
@@ -515,6 +568,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "887dc8fb41d80829ae5c93edaecffd006d049848ac5f999bdb0959f49d2aff83"
+  inputs-digest = "8d28becbff27d7da580410ae19b94d8bec774266896e53160745e29e107b2f99"
   solver-name = "gps-cdcl"
   solver-version = 1

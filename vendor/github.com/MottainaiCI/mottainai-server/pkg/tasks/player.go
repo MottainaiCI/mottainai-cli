@@ -31,6 +31,8 @@ type Executor interface {
 	Play(string) (int, error)
 	Setup(string) error
 	Clean() error
+	Fail(string)
+	ExitStatus(int)
 }
 
 type Player struct{ TaskID string }
@@ -42,14 +44,18 @@ func NewPlayer(taskid string) *Player {
 func (p *Player) Start(e Executor) (int, error) {
 	defer e.Clean()
 	err := e.Setup(p.TaskID)
-
 	if err != nil {
+		e.Fail("Setup phase error: " + err.Error())
 		return 1, errors.New("Setup phase error: " + err.Error())
 	}
 
 	res, err := e.Play(p.TaskID)
 	if err != nil {
-		return 1, errors.New("Play phase error (Exit with: " + strconv.Itoa(res) + ") : " + err.Error())
+		errmsg := "Play phase error (Exit with: " + strconv.Itoa(res) + ") : " + err.Error()
+		HandleErr(errmsg, p.TaskID)
+		return 1, errors.New(errmsg)
+	} else {
+		HandleSuccess(p.TaskID, res)
 	}
 	// err = e.Clean()
 	// if err != nil {
