@@ -55,9 +55,12 @@ func newUserSetCommand() *cobra.Command {
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 
 			if t == "admin" {
-				res, err = fetcher.GetOptions("/api/user/setadmin/"+id, map[string]string{})
+				res, err = fetcher.GetOptions("/api/user/set/admin/"+id, map[string]string{})
 			} else if t == "user" {
-				res, err = fetcher.GetOptions("/api/user/unsetadmin/"+id, map[string]string{})
+				res, err = fetcher.GetOptions("/api/user/unset/admin/"+id, map[string]string{})
+				res, err = fetcher.GetOptions("/api/user/unset/manager/"+id, map[string]string{})
+			} else if t == "manager" {
+				res, err = fetcher.GetOptions("/api/user/set/manager/"+id, map[string]string{})
 			}
 
 			tools.CheckError(err)

@@ -61,13 +61,13 @@ func newUserListCommand() *cobra.Command {
 			}
 
 			for _, i := range tlist {
-				task_table = append(task_table, []string{strconv.Itoa(i.ID), i.Name, i.Email, i.Admin})
+				task_table = append(task_table, []string{strconv.Itoa(i.ID), i.Name, i.Email, i.Admin, i.Manager})
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 			table.SetCenterSeparator("|")
-			table.SetHeader([]string{"ID", "Name", "Email", "Admin"})
+			table.SetHeader([]string{"ID", "Name", "Email", "Admin", "Manager"})
 
 			for _, v := range task_table {
 				table.Append(v)
