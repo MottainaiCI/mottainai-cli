@@ -35,6 +35,7 @@ func NewUserCommand() *cobra.Command {
 		newUserSetCommand(),
 		newUserListCommand(),
 		newUserRemoveCommand(),
+		newUserShowCommand(),
 	)
 
 	return cmd
