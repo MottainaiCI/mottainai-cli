@@ -72,6 +72,7 @@ type Task struct {
 	EndTime     string `json:"end_time" form:"end_time"`
 	Queue       string `json:"queue" form:"queue"`
 
+	TimeOut     float64  `json:"timeout" form:"timeout"`
 	Binds       []string `json:"binds" form:"binds"`
 	Environment []string `json:"environment" form:"environment"`
 }
@@ -140,6 +141,15 @@ func (t *Task) Reset() {
 	t.Owner = ""
 	t.Node = ""
 	t.StartTime = ""
+}
+
+func (t *Task) IsOwner(id int) bool {
+
+	if strconv.Itoa(id) == t.Owner {
+		return true
+	}
+
+	return false
 }
 
 func (t *Task) IsRunning() bool {

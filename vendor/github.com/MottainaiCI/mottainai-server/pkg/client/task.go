@@ -23,6 +23,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package client
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+
 	"fmt"
 )
 
@@ -53,6 +55,10 @@ func (f *Fetcher) FailTask(e string) {
 
 func (f *Fetcher) SetupTask() {
 	f.SetTaskStatus("setup")
+	f.GetOptions("/api/tasks/update/node", map[string]string{
+		"id":  f.docID,
+		"key": setting.Configuration.AgentKey,
+	})
 }
 
 func (f *Fetcher) RunTask() {
