@@ -23,7 +23,6 @@ package storage
 import (
 	"log"
 	"os"
-	"strconv"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
@@ -50,7 +49,7 @@ func newStorageListCommand() *cobra.Command {
 			log.Println("Available storages: ")
 
 			for _, i := range n {
-				storage_table = append(storage_table, []string{strconv.Itoa(i.ID), i.Name, i.Path})
+				storage_table = append(storage_table, []string{i.ID, i.Name, i.Path})
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
