@@ -36,7 +36,9 @@ const (
 )
 
 type Config struct {
-	Viper     *v.Viper
+	Viper *v.Viper
+
+	// Web UI Settings
 	Protocol  string `mapstructure:"webui_protocol"`
 	AppSubURL string `mapstructure:"webui_url"`
 	HTTPAddr  string `mapstructure:"webui_listenaddress"`
@@ -58,22 +60,22 @@ type Config struct {
 	ResultsExpireIn int `mapstructure:"results_expire_in"`
 
 	/* Broker Settings */
-	Broker              string         `mapstructure:"broker"`
-	BrokerType          string         `mapstructure:"broker_type"`
-	BrokerDefaultQueue  string         `mapstructure:"broker_default_queue"`
-	BrokerResultBackend string         `mapstructure:"broker_result_backend"`
-	BrokerURI           string         `mapstructure:"broker_uri"`
-	BrokerPass          string         `mapstructure:"broker_pass"`
-	BrokerUser          string         `mapstructure:"broker_user"`
-	BrokerExchange      string         `mapstructure:"broker_exchange"`
-	BrokerExchangeType  string         `mapstructure:"broker_exchange_type"`
-	BrokerBindingKey    string         `mapstructure:"broker_binding_key"`
-	AgentConcurrency    int            `mapstructure:"agent_concurrency"`
-	Queues              map[string]int `mapstructure:"queues"`
-	AgentKey            string         `mapstructure:"agent_key"`
-	ApiKey              string         `mapstructure:"api_key"`
+	Broker                   string            `mapstructure:"broker"`
+	BrokerType               string            `mapstructure:"broker_type"`
+	BrokerDefaultQueue       string            `mapstructure:"broker_default_queue"`
+	BrokerResultBackend      string            `mapstructure:"broker_result_backend"`
+	BrokerURI                string            `mapstructure:"broker_uri"`
+	BrokerPass               string            `mapstructure:"broker_pass"`
+	BrokerUser               string            `mapstructure:"broker_user"`
+	BrokerExchange           string            `mapstructure:"broker_exchange"`
+	BrokerExchangeType       string            `mapstructure:"broker_exchange_type"`
+	BrokerBindingKey         string            `mapstructure:"broker_binding_key"`
+	AgentConcurrency         int               `mapstructure:"agent_concurrency"`
+	Queues                   map[string]int    `mapstructure:"queues"`
+	CacheRegistryCredentials map[string]string `mapstructure:"cache_registry"`
 
-	TempWorkDir string `mapstructure:"work_dir"`
+	AgentKey string `mapstructure:"agent_key"`
+	ApiKey   string `mapstructure:"api_key"`
 
 	DockerEndpoint    string   `mapstructure:"docker_endpoint"`
 	DockerKeepImg     bool     `mapstructure:"docker_keepimg"`
@@ -136,10 +138,10 @@ func GenDefault(viper *v.Viper) {
 	viper.SetDefault("broker_binding_key", "machinery_task")
 	viper.SetDefault("agent_concurrency", 1)
 	viper.SetDefault("queues", map[string]int{})
+	viper.SetDefault("cache_registry", map[string]int{})
+
 	viper.SetDefault("agent_key", "")
 	viper.SetDefault("api_key", "")
-
-	viper.SetDefault("work_dir", "/var/tmp/mottainai")
 
 	viper.SetDefault("docker_endpoint", "unix:///var/run/docker.sock")
 	viper.SetDefault("docker_keepimg", true)
@@ -213,10 +215,9 @@ broker_exchange_type: %s
 broker_binding_key: %s
 agent_concurrency: %d
 queues: %v
+cache_registry: %v
 agent_key: ***************
 api_key: ***************
-
-work_dir: %s
 
 docker_endpoint: %s
 docker_keepimg: %t
@@ -242,7 +243,7 @@ access_control_allow_origin: %s
 		c.ResultsExpireIn,
 		c.Broker, c.BrokerType, c.BrokerDefaultQueue, c.BrokerResultBackend,
 		c.BrokerURI, c.BrokerPass, c.BrokerUser, c.BrokerExchange, c.BrokerExchangeType,
-		c.BrokerBindingKey, c.AgentConcurrency, c.Queues, c.TempWorkDir,
+		c.BrokerBindingKey, c.AgentConcurrency, c.Queues, c.CacheRegistryCredentials,
 		c.DockerEndpoint, c.DockerKeepImg, c.DockerPriviledged, c.DockerInDocker,
 		c.DockerEndpointDiD, c.DockerCaps, c.DockerCapsDrop, c.PrivateQueue, c.StandAlone,
 		c.WebHookGitHubToken, c.TLSCert, c.AccessControlAllowOrigin)
