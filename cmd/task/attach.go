@@ -57,7 +57,7 @@ func newTaskAttachCommand() *cobra.Command {
 				fetcher.GetJSONOptions("/api/tasks/"+id, map[string]string{}, &t)
 				if t.Status != "running" {
 					if t.Status == "done" && pos == 0 {
-						buff, err := fetcher.GetOptions("/artefact/"+id+"/build_"+strconv.Itoa(t.ID)+".log", map[string]string{})
+						buff, err := fetcher.GetOptions("/artefact/"+id+"/build_"+t.ID+".log", map[string]string{})
 						if err != nil {
 							panic(err)
 						}
