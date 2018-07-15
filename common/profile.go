@@ -72,6 +72,10 @@ func (p *ProfileConf) AddProfile(name string, master string) error {
 		return errors.New("Invalid master url")
 	}
 
+	// If all profiles are removed then Profiles is nil
+	if p.Profiles == nil {
+		p.Profiles = make(map[string]Profile)
+	}
 	p.Profiles[name] = Profile{Master: master}
 
 	return nil

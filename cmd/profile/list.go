@@ -50,6 +50,10 @@ func newProfileListCommand() *cobra.Command {
 			err = v.Unmarshal(&conf)
 			tools.CheckError(err)
 
+			if conf.Profiles == nil {
+				fmt.Println("No profiles available.")
+				return
+			}
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetBorders(tablewriter.Border{
 				Left:   true,
