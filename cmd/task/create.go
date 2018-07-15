@@ -24,6 +24,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"regexp"
+
+	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -45,6 +48,7 @@ func newTaskCreateCommand() *cobra.Command {
 			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			to, _ := cmd.Flags().GetString("to")
 
 			dat := make(map[string]interface{})
 
@@ -75,20 +79,50 @@ func newTaskCreateCommand() *cobra.Command {
 				}
 			}
 
-			res, err := fetcher.GenericForm("/api/tasks", dat)
-			if err != nil {
-				panic(err)
-			}
-			tid := string(res)
+			if len(to) > 0 {
+				reg, err := regexp.Compile(to)
+				if err != nil {
+					panic(err)
+				}
 
-			fmt.Println("-------------------------")
-			fmt.Println("Task " + tid + " has been created")
-			fmt.Println("-------------------------")
-			fmt.Println("Live log: ", tools.BuildCmdArgs(cmd, "task attach "+tid))
-			fmt.Println("Information: ", tools.BuildCmdArgs(cmd, "task show "+tid))
-			fmt.Println("URL:", " "+fetcher.BaseURL+"/tasks/display/"+tid)
-			fmt.Println("Build Log:", " "+fetcher.BaseURL+"/artefact/"+tid+"/build_"+tid+".log")
-			fmt.Println("-------------------------")
+				var n []nodes.Node
+				var q []string
+				fetcher.GetJSONOptions("/api/nodes", map[string]string{}, &n)
+
+				for _, i := range n {
+					// Make a Regex to say we only want
+					if reg.MatchString(i.Hostname + i.NodeID) {
+						q = append(q, i.Hostname+i.NodeID)
+						fmt.Println("Match: ", i.Hostname+i.NodeID)
+					}
+
+				}
+				for _, queue := range q {
+					dat["queue"] = queue
+					res, err := fetcher.GenericForm("/api/tasks", dat)
+					if err != nil {
+						panic(err)
+					}
+					tid := string(res)
+					fmt.Println("Task "+tid+" has been created for", queue)
+				}
+
+			} else {
+				res, err := fetcher.GenericForm("/api/tasks", dat)
+				if err != nil {
+					panic(err)
+				}
+				tid := string(res)
+
+				fmt.Println("-------------------------")
+				fmt.Println("Task " + tid + " has been created")
+				fmt.Println("-------------------------")
+				fmt.Println("Live log: ", tools.BuildCmdArgs(cmd, "task attach "+tid))
+				fmt.Println("Information: ", tools.BuildCmdArgs(cmd, "task show "+tid))
+				fmt.Println("URL:", " "+fetcher.BaseURL+"/tasks/display/"+tid)
+				fmt.Println("Build Log:", " "+fetcher.BaseURL+"/artefact/"+tid+"/build_"+tid+".log")
+				fmt.Println("-------------------------")
+			}
 		},
 	}
 
@@ -106,6 +140,8 @@ func newTaskCreateCommand() *cobra.Command {
 	flags.StringP("tag_namespace", "T", "", "Automatically to the specified namespace on success")
 	flags.StringP("prune", "P", "yes", "Perform pruning actions after execution")
 	flags.StringP("queue", "q", "", "Queue where to send the task to")
+	flags.String("to", "", "Regex match pattern for nodes, it will create a task for each one")
+
 	flags.StringP("cache_image", "C", "yes",
 		"Cache image after execution inside the host for later reuse.")
 
