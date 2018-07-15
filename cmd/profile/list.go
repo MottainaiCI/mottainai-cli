@@ -61,10 +61,10 @@ func newProfileListCommand() *cobra.Command {
 				Right:  true,
 				Bottom: true})
 			table.SetCenterSeparator("|")
-			table.SetHeader([]string{"Name", "Master URL"})
+			table.SetHeader([]string{"Name", "Master URL", "ApiKey"})
 
 			for k, val := range conf.Profiles {
-				table.Append([]string{k, val.GetMaster()})
+				table.Append([]string{k, val.GetMaster(), val.GetApiKey()})
 			}
 
 			table.Render()

@@ -97,6 +97,9 @@ var rootCmd = &cobra.Command{
 
 					if profile != nil {
 						v.Set("master", profile.GetMaster())
+						if profile.GetApiKey() != "" && !cmd.Flag("apikey").Changed {
+							v.Set("apikey", profile.GetApiKey())
+						}
 					} else {
 						fmt.Printf("No profile with name %s. I use default value.\n", v.GetString("profile"))
 					}

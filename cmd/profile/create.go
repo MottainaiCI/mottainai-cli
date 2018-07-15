@@ -35,23 +35,26 @@ import (
 
 func newProfileCreateCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "create <profile-name> <api-url> [OPTIONS]",
+		Use:   "create <profile-name> <api-url> [api-key] [OPTIONS]",
 		Short: "Create a new profile",
-		Args:  cobra.RangeArgs(2, 2),
+		Args:  cobra.RangeArgs(2, 3),
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			var name, master, f string
+			var name, master, apikey, f string
 			var conf common.ProfileConf
 			var v *viper.Viper = setting.Configuration.Viper
 
 			name = args[0]
 			master = args[1]
+			if len(args) == 3 {
+				apikey = args[2]
+			}
 
 			if v.Get("profiles") == nil {
 				// POST: No configuration file found
 
 				conf = *common.NewProfileConf()
-				err = conf.AddProfile(name, master)
+				err = conf.AddProfile(name, master, apikey)
 				tools.CheckError(err)
 
 			} else {
@@ -66,7 +69,7 @@ func newProfileCreateCommand() *cobra.Command {
 					return
 				}
 
-				err = conf.AddProfile(name, master)
+				err = conf.AddProfile(name, master, apikey)
 				tools.CheckError(err)
 			}
 

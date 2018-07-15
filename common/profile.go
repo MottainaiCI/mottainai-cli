@@ -36,6 +36,7 @@ const (
 
 type Profile struct {
 	Master string `mapstructure:"master"`
+	ApiKey string `mapstructure:"apikey"`
 }
 
 type ProfileConf struct {
@@ -62,7 +63,7 @@ func (p *ProfileConf) GetProfile(name string) (*Profile, error) {
 	return ans, nil
 }
 
-func (p *ProfileConf) AddProfile(name string, master string) error {
+func (p *ProfileConf) AddProfile(name string, master string, apikey string) error {
 
 	if name == "" {
 		return errors.New("Invalid name")
@@ -76,7 +77,11 @@ func (p *ProfileConf) AddProfile(name string, master string) error {
 	if p.Profiles == nil {
 		p.Profiles = make(map[string]Profile)
 	}
-	p.Profiles[name] = Profile{Master: master}
+	if apikey == "" {
+		p.Profiles[name] = Profile{Master: master}
+	} else {
+		p.Profiles[name] = Profile{Master: master, ApiKey: apikey}
+	}
 
 	return nil
 }
@@ -95,4 +100,8 @@ func (p *ProfileConf) RemoveProfile(name string) *Profile {
 
 func (p *Profile) GetMaster() string {
 	return p.Master
+}
+
+func (p *Profile) GetApiKey() string {
+	return p.ApiKey
 }
