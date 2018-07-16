@@ -24,9 +24,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"regexp"
-
-	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -49,7 +46,6 @@ func newTaskCreateCommand() *cobra.Command {
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 			to, _ := cmd.Flags().GetString("to")
-
 			dat := make(map[string]interface{})
 
 			jsonfile, err = cmd.Flags().GetString("json")
@@ -78,41 +74,16 @@ func newTaskCreateCommand() *cobra.Command {
 					dat[n] = value
 				}
 			}
-
+			var created = make(map[string]bool)
 			if len(to) > 0 {
-				reg, err := regexp.Compile(to)
-				if err != nil {
-					panic(err)
-				}
-
-				var n []nodes.Node
-				var q []string
-				fetcher.GetJSONOptions("/api/nodes", map[string]string{}, &n)
-
-				for _, i := range n {
-					// Make a Regex to say we only want
-					if reg.MatchString(i.Hostname + i.NodeID) {
-						q = append(q, i.Hostname+i.NodeID)
-						fmt.Println("Match: ", i.Hostname+i.NodeID)
-					}
-
-				}
-				for _, queue := range q {
-					dat["queue"] = queue
-					res, err := fetcher.GenericForm("/api/tasks", dat)
-					if err != nil {
-						panic(err)
-					}
-					tid := string(res)
-					fmt.Println("Task "+tid+" has been created for", queue)
-				}
-
+				created = GenerateTasks(fetcher, dat, to)
 			} else {
 				res, err := fetcher.GenericForm("/api/tasks", dat)
 				if err != nil {
 					panic(err)
 				}
 				tid := string(res)
+				created[tid] = false
 
 				fmt.Println("-------------------------")
 				fmt.Println("Task " + tid + " has been created")
@@ -123,6 +94,11 @@ func newTaskCreateCommand() *cobra.Command {
 				fmt.Println("Build Log:", " "+fetcher.BaseURL+"/artefact/"+tid+"/build_"+tid+".log")
 				fmt.Println("-------------------------")
 			}
+			if monitor, err := cmd.Flags().GetBool("monitor"); err == nil && monitor {
+				fmt.Println("Monitoring task state")
+				MonitorTasks(fetcher, created)
+			}
+
 		},
 	}
 
@@ -141,6 +117,7 @@ func newTaskCreateCommand() *cobra.Command {
 	flags.StringP("prune", "P", "yes", "Perform pruning actions after execution")
 	flags.StringP("queue", "q", "", "Queue where to send the task to")
 	flags.String("to", "", "Regex match pattern for nodes, it will create a task for each one")
+	flags.Bool("monitor", false, "Monitor task after creation (returns same exit status as task)")
 
 	flags.StringP("cache_image", "C", "yes",
 		"Cache image after execution inside the host for later reuse.")

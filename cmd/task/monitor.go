@@ -21,31 +21,28 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package task
 
 import (
-	"github.com/spf13/cobra"
+	client "github.com/MottainaiCI/mottainai-server/pkg/client"
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	cobra "github.com/spf13/cobra"
+	viper "github.com/spf13/viper"
 )
 
-func NewTaskCommand() *cobra.Command {
-
+func newTaskMonitorCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "task [command] [OPTIONS]",
-		Short: "Manage tasks",
-	}
+		Use:   "monitor id1 id2 id3 ...",
+		Short: "Monitor tasks and propagate exit status",
+		Run: func(cmd *cobra.Command, args []string) {
+			var v *viper.Viper = setting.Configuration.Viper
 
-	cmd.AddCommand(
-		newTaskArtefactsCommand(),
-		newTaskAttachCommand(),
-		newTaskCloneCommand(),
-		newTaskCreateCommand(),
-		newTaskDownloadCommand(),
-		newTaskExecuteCommand(),
-		newTaskListCommand(),
-		newTaskLogCommand(),
-		newTaskRemoveCommand(),
-		newTaskShowCommand(),
-		newTaskStartCommand(),
-		newTaskStopCommand(),
-		newTaskMonitorCommand(),
-	)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+
+			var tasks = make(map[string]bool)
+			for _, id := range args {
+				tasks[id] = false
+			}
+			MonitorTasks(fetcher, tasks)
+		},
+	}
 
 	return cmd
 }
