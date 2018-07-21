@@ -28,6 +28,9 @@ import (
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	task "github.com/MottainaiCI/mottainai-server/pkg/tasks"
+
+	"github.com/ghodss/yaml"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
@@ -39,25 +42,38 @@ func newTaskCreateCommand() *cobra.Command {
 		Args:  cobra.OnlyValidArgs,
 		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
-			var err error
 			var fetcher *client.Fetcher
-			var jsonfile string
+
 			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 			to, _ := cmd.Flags().GetString("to")
 			dat := make(map[string]interface{})
+			t := &task.Task{}
 
-			jsonfile, err = cmd.Flags().GetString("json")
+			jsonfile, err := cmd.Flags().GetString("json")
 			tools.CheckError(err)
+			yamlfile, err := cmd.Flags().GetString("yaml")
+			tools.CheckError(err)
+
 			if jsonfile != "" {
 				content, err := ioutil.ReadFile(jsonfile)
 				if err != nil {
 					panic(err)
 				}
-				if err := json.Unmarshal(content, &dat); err != nil {
+				if err := json.Unmarshal(content, &t); err != nil {
 					panic(err)
 				}
+				dat = t.ToMap()
+			} else if yamlfile != "" {
+				content, err := ioutil.ReadFile(yamlfile)
+				if err != nil {
+					panic(err)
+				}
+				if err := yaml.Unmarshal(content, &t); err != nil {
+					panic(err)
+				}
+				dat = t.ToMap()
 			}
 
 			var value string
@@ -104,6 +120,7 @@ func newTaskCreateCommand() *cobra.Command {
 
 	var flags = cmd.Flags()
 	flags.String("json", "", "Decode parameters from a JSON file ( e.g. /path/to/file.json )")
+	flags.String("yaml", "", "Decode parameters from a YAML file ( e.g. /path/to/file.yaml )")
 	flags.String("script", "", "Entrypoint script")
 	flags.String("storage", "", "Storage ID")
 	flags.StringP("source", "s", "", "Repository url ( e.g. https://github.com/foo/bar.git )")
