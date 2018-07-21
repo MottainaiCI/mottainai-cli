@@ -30,7 +30,7 @@
     "pkg/user",
     "pkg/utils"
   ]
-  revision = "5b23778d75ac8ce990bce2a54b1aff26f6d87ead"
+  revision = "13ede7036b359c8a16eb54922fc47a755b67149e"
 
 [[projects]]
   branch = "master"
@@ -232,6 +232,12 @@
   ]
   revision = "a69d19351219b6dd56f274f96d85a7014a2ec34e"
   version = "v1.6.0"
+
+[[projects]]
+  name = "github.com/ghodss/yaml"
+  packages = ["."]
+  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/gizak/termui"
@@ -708,6 +714,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8d28becbff27d7da580410ae19b94d8bec774266896e53160745e29e107b2f99"
+  inputs-digest = "cee2f16173a35d55a33383d53f01aef60c4ad50f4557a46cf77913cade122188"
   solver-name = "gps-cdcl"
   solver-version = 1
