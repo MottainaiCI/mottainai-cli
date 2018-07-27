@@ -28,6 +28,9 @@ import (
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	task "github.com/MottainaiCI/mottainai-server/pkg/tasks"
+	"github.com/ghodss/yaml"
+
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
@@ -51,11 +54,14 @@ func newPlanCreateCommand() *cobra.Command {
 			}
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
-
+			var p = &task.Plan{}
 			dat := make(map[string]interface{})
 
 			jsonfile, err = cmd.Flags().GetString("json")
 			tools.CheckError(err)
+			yamlfile, err := cmd.Flags().GetString("yaml")
+			tools.CheckError(err)
+
 			if jsonfile != "" {
 				content, err := ioutil.ReadFile(jsonfile)
 				tools.CheckError(err)
@@ -63,6 +69,15 @@ func newPlanCreateCommand() *cobra.Command {
 				if err := json.Unmarshal(content, &dat); err != nil {
 					panic(err)
 				}
+			} else if yamlfile != "" {
+				content, err := ioutil.ReadFile(yamlfile)
+				if err != nil {
+					panic(err)
+				}
+				if err := yaml.Unmarshal(content, &p); err != nil {
+					panic(err)
+				}
+				dat = p.ToMap()
 			}
 
 			for _, n := range flagsName {
@@ -87,6 +102,7 @@ func newPlanCreateCommand() *cobra.Command {
 
 	var flags = cmd.Flags()
 	flags.String("json", "", "Decode parameters from a JSON file ( e.g. /path/to/file.json )")
+	flags.String("yaml", "", "Decode parameters from a YAML file ( e.g. /path/to/file.yaml )")
 	flags.String("script", "", "Entrypoint script")
 	flags.String("storage", "", "Storage ID")
 	flags.StringP("source", "s", "", "Repository url ( e.g. https://github.com/foo/bar.git )")
