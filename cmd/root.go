@@ -29,6 +29,7 @@ import (
 
 	namespace "github.com/MottainaiCI/mottainai-cli/cmd/namespace"
 	node "github.com/MottainaiCI/mottainai-cli/cmd/node"
+	pipeline "github.com/MottainaiCI/mottainai-cli/cmd/pipeline"
 	plan "github.com/MottainaiCI/mottainai-cli/cmd/plan"
 	profile "github.com/MottainaiCI/mottainai-cli/cmd/profile"
 	simulate "github.com/MottainaiCI/mottainai-cli/cmd/simulate"
@@ -36,6 +37,7 @@ import (
 	task "github.com/MottainaiCI/mottainai-cli/cmd/task"
 	token "github.com/MottainaiCI/mottainai-cli/cmd/token"
 	user "github.com/MottainaiCI/mottainai-cli/cmd/user"
+
 	common "github.com/MottainaiCI/mottainai-cli/common"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	viper "github.com/spf13/viper"
@@ -134,6 +136,7 @@ func init() {
 		user.NewUserCommand(),
 		storage.NewStorageCommand(),
 		simulate.NewSimulateCommand(),
+		pipeline.NewPipelineCommand(),
 	)
 }
 
