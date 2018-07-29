@@ -42,6 +42,14 @@ func NewPlayer(taskid string) *Player {
 	return &Player{TaskID: taskid}
 }
 
+func (p *Player) EarlyFail(e Executor, TaskID, reason string) {
+	err := e.Setup(p.TaskID)
+	if err != nil {
+		e.Fail("Setup phase error: " + err.Error())
+	}
+	e.Fail(reason)
+}
+
 func (p *Player) Start(e Executor) (int, error) {
 	defer e.Clean()
 	err := e.Setup(p.TaskID)
