@@ -64,6 +64,7 @@ type Task struct {
 	Prune        string   `json:"prune" form:"prune"`
 	CacheImage   string   `json:"cache_image" form:"cache_image"`
 	CacheClean   string   `json:"cache_clean" form:"cache_clean"`
+	PublishMode  string   `json:"publish_mode" form:"publish_mode"`
 
 	TagNamespace string `json:"tag_namespace" form:"tag_namespace"`
 
@@ -283,6 +284,14 @@ func (t *Task) AppendBuildLog(s string) error {
 	})
 
 }
+
+func (t *Task) IsStopped() bool {
+	if t.Status == setting.TASK_STATE_STOPPED || t.Status == setting.TASK_STATE_ASK_STOP {
+		return true
+	}
+
+	return false
+}
 func (t *Task) IsDone() bool {
 	if t.Status == setting.TASK_STATE_DONE {
 		return true
@@ -301,6 +310,14 @@ func (t *Task) WantsClean() bool {
 
 func (t *Task) IsSuccess() bool {
 	if t.ExitStatus == "0" {
+		return true
+	}
+
+	return false
+}
+
+func (t *Task) IsPublishAppendMode() bool {
+	if t.PublishMode == setting.TASK_PUBLISH_MODE_APPEND {
 		return true
 	}
 
@@ -345,6 +362,10 @@ func (t *Task) OnSuccess() {
 
 	if len(t.TagNamespace) > 0 {
 		ns := namespace.NewFromMap(map[string]interface{}{"name": t.TagNamespace, "path": t.TagNamespace})
-		ns.Tag(t.ID)
+		if t.IsPublishAppendMode() {
+			ns.Append(t.ID)
+		} else {
+			ns.Tag(t.ID)
+		}
 	}
 }

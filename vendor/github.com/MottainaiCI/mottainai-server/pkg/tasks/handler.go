@@ -68,7 +68,6 @@ func HandleArgs(args ...interface{}) (string, int, error) {
 			if v.(int) != 0 {
 				return docID, v.(int), errors.New("Other tasks in the chain failed!")
 			}
-
 		}
 	} else {
 		docID = args[len(args)-1].(string)
@@ -251,6 +250,10 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 	if str, ok := t["string"].(string); ok {
 		delayed = str
 	}
+	var publish string
+	if str, ok := t["publish_mode"].(string); ok {
+		publish = str
+	}
 	var entrypoint []string
 	entrypoint = make([]string, 0)
 
@@ -277,6 +280,7 @@ func (h *TaskHandler) NewTaskFromMap(t map[string]interface{}) Task {
 		Commit:       commit,
 		Entrypoint:   entrypoint,
 		Output:       output,
+		PublishMode:  publish,
 		Result:       result,
 		Status:       status,
 		Storage:      storage,
