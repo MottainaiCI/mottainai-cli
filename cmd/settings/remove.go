@@ -18,47 +18,39 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package task
+package settingcmd
 
 import (
+	"fmt"
 	"log"
 
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
-	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
 
-func newTaskExecuteCommand() *cobra.Command {
+func newSettingRemoveCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "execute <taskid> [OPTIONS]",
-		Short: "execute task",
+		Use:   "remove <setting key> [OPTIONS]",
+		Short: "Remove a setting key",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
-			setting.Configuration.ApiKey = v.GetString("apikey")
-			fetcher.ActiveReports = true
+
 			id := args[0]
 			if len(id) == 0 {
-				log.Fatalln("You need to define a task id")
+				log.Fatalln("You need to define a pipeline id")
 			}
 
-			var t citasks.Task
-			err := fetcher.GetJSONOptions("/api/tasks/"+id, map[string]string{}, &t)
-			if err != nil {
-				panic(err.Error())
-			}
+			res, err := fetcher.GetOptions("/api/settings/remove/"+id, map[string]string{})
+			tools.CheckError(err)
 
-			var fn func(string) (int, error)
-
-			fn = citasks.DefaultTaskHandler().Handler(t.TaskName)
-			setting.Configuration.GenDefault()
-			setting.Configuration.AppURL = v.GetString("master")
-			fn(id)
+			fmt.Println(string(res))
 		},
 	}
 

@@ -18,47 +18,41 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package task
+package settingcmd
 
 import (
+	"fmt"
 	"log"
 
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
-	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
 
-func newTaskExecuteCommand() *cobra.Command {
+func newSettingUpdateCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "execute <taskid> [OPTIONS]",
-		Short: "execute task",
-		Args:  cobra.RangeArgs(1, 1),
+		Use:   "update <key> <value> [OPTIONS]",
+		Short: "Update a system setting",
+		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
-
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
-			setting.Configuration.ApiKey = v.GetString("apikey")
-			fetcher.ActiveReports = true
-			id := args[0]
-			if len(id) == 0 {
-				log.Fatalln("You need to define a task id")
+			dat := make(map[string]interface{})
+
+			if len(args) != 2 {
+				log.Fatalln("You need to define akey and a value to create")
 			}
+			dat["key"] = args[0]
+			dat["value"] = args[1]
 
-			var t citasks.Task
-			err := fetcher.GetJSONOptions("/api/tasks/"+id, map[string]string{}, &t)
-			if err != nil {
-				panic(err.Error())
-			}
+			res, err := fetcher.GenericForm("/api/settings/update", dat)
+			tools.CheckError(err)
+			tid := string(res)
 
-			var fn func(string) (int, error)
-
-			fn = citasks.DefaultTaskHandler().Handler(t.TaskName)
-			setting.Configuration.GenDefault()
-			setting.Configuration.AppURL = v.GetString("master")
-			fn(id)
+			fmt.Println("Setting ", args, "Updated", tid)
 		},
 	}
 

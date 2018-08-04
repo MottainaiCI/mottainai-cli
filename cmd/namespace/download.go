@@ -38,6 +38,7 @@ func newNamespaceDownloadCommand() *cobra.Command {
 			var v *viper.Viper = setting.Configuration.Viper
 			var fetcher *client.Fetcher
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher.ActiveReports = true
 
 			ns := args[0]
 			target := args[1]
@@ -45,7 +46,9 @@ func newNamespaceDownloadCommand() *cobra.Command {
 				log.Fatalln("You need to define a namespace and a target")
 			}
 
-			fetcher.DownloadArtefactsFromNamespace(ns, target)
+			if err := fetcher.DownloadArtefactsFromNamespace(ns, target); err != nil {
+				log.Fatalln(err)
+			}
 		},
 	}
 

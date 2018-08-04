@@ -1,6 +1,6 @@
 /*
 
-Copyright (C) 2017-2018  Ettore Di Giacinto <mudler@gentoo.org>
+Copyright (C) 2018  Ettore Di Giacinto <mudler@gentoo.org>
                          Daniele Rondina <geaaru@sabayonlinux.org>
 
 This program is free software: you can redistribute it and/or modify
@@ -18,34 +18,24 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package task
+package settingcmd
 
 import (
 	"github.com/spf13/cobra"
 )
 
-func NewTaskCommand() *cobra.Command {
+func NewSettingCommand() *cobra.Command {
 
 	var cmd = &cobra.Command{
-		Use:   "task [command] [OPTIONS]",
-		Short: "Manage tasks",
+		Use:   "setting [command] [OPTIONS]",
+		Short: "Manage Infrastructure settings",
 	}
 
 	cmd.AddCommand(
-		newTaskArtefactsCommand(),
-		newTaskAttachCommand(),
-		newTaskCloneCommand(),
-		newTaskCreateCommand(),
-		newTaskDownloadCommand(),
-		newTaskExecuteCommand(),
-		newTaskListCommand(),
-		newTaskLogCommand(),
-		newTaskRemoveCommand(),
-		newTaskShowCommand(),
-		newTaskStartCommand(),
-		newTaskStopCommand(),
-		newTaskMonitorCommand(),
-		newTaskPlayCommand(),
+		newSettingCreateCommand(),
+		newSettingListCommand(),
+		newSettingRemoveCommand(),
+		newSettingUpdateCommand(),
 	)
 
 	return cmd

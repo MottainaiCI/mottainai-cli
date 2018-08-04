@@ -39,6 +39,7 @@ func newStorageDownloadCommand() *cobra.Command {
 			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher.ActiveReports = true
 
 			storage := args[0]
 			target := args[1]
@@ -46,7 +47,9 @@ func newStorageDownloadCommand() *cobra.Command {
 				log.Fatalln("You need to define a storage id and a target")
 			}
 
-			fetcher.DownloadArtefactsFromStorage(storage, target)
+			if err := fetcher.DownloadArtefactsFromStorage(storage, target); err != nil {
+				log.Fatalln(err)
+			}
 		},
 	}
 

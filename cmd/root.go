@@ -32,6 +32,7 @@ import (
 	pipeline "github.com/MottainaiCI/mottainai-cli/cmd/pipeline"
 	plan "github.com/MottainaiCI/mottainai-cli/cmd/plan"
 	profile "github.com/MottainaiCI/mottainai-cli/cmd/profile"
+	settingcmd "github.com/MottainaiCI/mottainai-cli/cmd/settings"
 	simulate "github.com/MottainaiCI/mottainai-cli/cmd/simulate"
 	storage "github.com/MottainaiCI/mottainai-cli/cmd/storage"
 	task "github.com/MottainaiCI/mottainai-cli/cmd/task"
@@ -137,6 +138,7 @@ func init() {
 		storage.NewStorageCommand(),
 		simulate.NewSimulateCommand(),
 		pipeline.NewPipelineCommand(),
+		settingcmd.NewSettingCommand(),
 	)
 }
 

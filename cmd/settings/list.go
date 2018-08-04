@@ -18,49 +18,66 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package task
+package settingcmd
 
 import (
-	"log"
+	"fmt"
+	"os"
+	"strconv"
 
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
-	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
+	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
 
-func newTaskExecuteCommand() *cobra.Command {
+func newSettingListCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "execute <taskid> [OPTIONS]",
-		Short: "execute task",
-		Args:  cobra.RangeArgs(1, 1),
+		Use:   "list [OPTIONS]",
+		Short: "List settings",
+		Args:  cobra.OnlyValidArgs,
 		Run: func(cmd *cobra.Command, args []string) {
+			var err error
+			var tlist []setting.Setting
+			var setting_table [][]string
+			var quiet bool
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
-			setting.Configuration.ApiKey = v.GetString("apikey")
-			fetcher.ActiveReports = true
-			id := args[0]
-			if len(id) == 0 {
-				log.Fatalln("You need to define a task id")
+			fetcher.GetJSONOptions("/api/settings", map[string]string{}, &tlist)
+
+			quiet, err = cmd.Flags().GetBool("quiet")
+			tools.CheckError(err)
+
+			if quiet {
+				for _, i := range tlist {
+					fmt.Println(i.Key, i.Value)
+				}
+				return
 			}
 
-			var t citasks.Task
-			err := fetcher.GetJSONOptions("/api/tasks/"+id, map[string]string{}, &t)
-			if err != nil {
-				panic(err.Error())
+			for _, i := range tlist {
+				setting_table = append(setting_table, []string{strconv.Itoa(i.ID), i.Key, i.Value})
 			}
 
-			var fn func(string) (int, error)
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+			table.SetCenterSeparator("|")
+			table.SetHeader([]string{"ID", "Key", "Value"})
 
-			fn = citasks.DefaultTaskHandler().Handler(t.TaskName)
-			setting.Configuration.GenDefault()
-			setting.Configuration.AppURL = v.GetString("master")
-			fn(id)
+			for _, v := range setting_table {
+				table.Append(v)
+			}
+			table.Render()
+
 		},
 	}
+
+	var flags = cmd.Flags()
+	flags.BoolP("quiet", "q", false, "Quiet Output")
 
 	return cmd
 }
