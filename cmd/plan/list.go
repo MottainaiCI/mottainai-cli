@@ -65,13 +65,13 @@ func newPlanListCommand() *cobra.Command {
 			}
 
 			for _, i := range tlist {
-				task_table = append(task_table, []string{i.ID, i.Planned, i.Directory})
+				task_table = append(task_table, []string{i.ID, i.Planned, i.Namespace, i.TagNamespace, i.Source, i.Directory})
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 			table.SetCenterSeparator("|")
-			table.SetHeader([]string{"ID", "Planned", "Dir"})
+			table.SetHeader([]string{"ID", "Planned", "From Namespace", "Tag to", "Source", "Dir"})
 
 			for _, v := range task_table {
 				table.Append(v)
