@@ -45,7 +45,7 @@ func NewTaskCommand() *cobra.Command {
 		newTaskStartCommand(),
 		newTaskStopCommand(),
 		newTaskMonitorCommand(),
-		newTaskPlayCommand(),
+		//newTaskPlayCommand(),
 	)
 
 	return cmd
