@@ -30,7 +30,7 @@
     "pkg/user",
     "pkg/utils"
   ]
-  revision = "e37f59f25273ef417de73aa7263f01553a58b1f5"
+  revision = "5eae08d105a56d43ef759442803b7c8d92337c55"
 
 [[projects]]
   branch = "master"
@@ -371,6 +371,12 @@
   name = "github.com/mudler/anagent"
   packages = ["."]
   revision = "a44327bef7535c7813ce4330b7488f872e780472"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mxk/go-flowrate"
+  packages = ["flowrate"]
+  revision = "cca7078d478f8520f85629ad7c68962d31ed7682"
 
 [[projects]]
   branch = "master"
