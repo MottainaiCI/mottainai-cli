@@ -71,7 +71,7 @@ func newPipelineCreateCommand() *cobra.Command {
 				if err := yaml.Unmarshal(content, &p); err != nil {
 					panic(err)
 				}
-				dat = p.ToMap()
+				dat = p.ToMap(false)
 			}
 
 			res, err := fetcher.GenericForm("/api/tasks/pipeline", dat)
