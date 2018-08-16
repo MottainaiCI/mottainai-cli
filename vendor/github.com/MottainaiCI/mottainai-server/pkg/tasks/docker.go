@@ -263,7 +263,7 @@ func (d *DockerExecutor) Play(docID string) (int, error) {
 		now := time.Now()
 		task_info = th.FetchTask(fetcher)
 		timedout := (task_info.TimeOut != 0 && (now.Sub(starttime).Seconds() > task_info.TimeOut))
-		if task_info.Status != "running" || timedout {
+		if task_info.IsStopped() || timedout {
 			if timedout {
 				d.Report("Task timeout!")
 			}
@@ -337,7 +337,10 @@ func (d *DockerExecutor) FindImage(image string) (string, error) {
 }
 
 func (d *DockerExecutor) RemoveImage(image string) error {
-	return d.DockerClient.RemoveImage(image)
+	return d.DockerClient.RemoveImageExtended(image, docker.RemoveImageOptions{
+		Force:   true,
+		NoPrune: false,
+	})
 }
 
 func (d *DockerExecutor) NewImageFrom(image, newimage, tag string) error {
@@ -356,8 +359,9 @@ func (d *DockerExecutor) NewImageFrom(image, newimage, tag string) error {
 
 func (d *DockerExecutor) CleanUpContainer(ID string) error {
 	return d.DockerClient.RemoveContainer(docker.RemoveContainerOptions{
-		ID:    ID,
-		Force: true,
+		ID:            ID,
+		Force:         true,
+		RemoveVolumes: true,
 	})
 }
 
