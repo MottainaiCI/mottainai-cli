@@ -22,7 +22,6 @@ package node
 
 import (
 	"os"
-	"strconv"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
@@ -47,7 +46,7 @@ func newNodeListCommand() *cobra.Command {
 			fetcher.GetJSONOptions("/api/nodes", map[string]string{}, &n)
 
 			for _, i := range n {
-				node_table = append(node_table, []string{strconv.Itoa(i.ID), i.Hostname, i.User, i.Pass, i.Key, i.NodeID})
+				node_table = append(node_table, []string{i.ID, i.Hostname, i.User, i.Pass, i.Key, i.NodeID})
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)

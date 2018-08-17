@@ -23,7 +23,6 @@ package token
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -61,7 +60,7 @@ func newTokenListCommand() *cobra.Command {
 			}
 
 			for _, i := range tlist {
-				task_table = append(task_table, []string{strconv.Itoa(i.ID), i.Key, i.UserId})
+				task_table = append(task_table, []string{i.ID, i.Key, i.UserId})
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)

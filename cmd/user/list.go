@@ -23,7 +23,6 @@ package user
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -61,7 +60,7 @@ func newUserListCommand() *cobra.Command {
 			}
 
 			for _, i := range tlist {
-				task_table = append(task_table, []string{strconv.Itoa(i.ID), i.Name, i.Email, i.Admin, i.Manager})
+				task_table = append(task_table, []string{i.ID, i.Name, i.Email, i.Admin, i.Manager})
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)

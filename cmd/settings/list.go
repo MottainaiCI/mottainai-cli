@@ -23,7 +23,6 @@ package settingcmd
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -60,7 +59,7 @@ func newSettingListCommand() *cobra.Command {
 			}
 
 			for _, i := range tlist {
-				setting_table = append(setting_table, []string{strconv.Itoa(i.ID), i.Key, i.Value})
+				setting_table = append(setting_table, []string{i.ID, i.Key, i.Value})
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
