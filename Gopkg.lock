@@ -31,7 +31,7 @@
     "pkg/utils",
     "pkg/webhook"
   ]
-  revision = "013c0db546a9dbc5e5ce95909feda7fd3acc4e1f"
+  revision = "fb98b4d9a52c1462c4e006e89e01c3bcf8815f8f"
 
 [[projects]]
   branch = "master"
@@ -318,6 +318,18 @@
   packages = ["."]
   revision = "9fc7bb800b555d63157c65a904c86a2cc7b4e795"
   version = "0.4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/koding/logging"
+  packages = ["."]
+  revision = "8b5a689ed69b1c7cd1e3595276fc2a352d7818e0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/koding/vagrantutil"
+  packages = ["."]
+  revision = "70827343f1169931bbe84e8051fcbcf06da90eb7"
 
 [[projects]]
   name = "github.com/magiconair/properties"
