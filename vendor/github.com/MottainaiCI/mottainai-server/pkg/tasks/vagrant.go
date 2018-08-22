@@ -35,22 +35,70 @@ type VagrantExecutor struct {
 	*TaskExecutor
 	Vagrant  *vagrantutil.Vagrant
 	Provider string
+	BoxImage string
 }
 
 func NewVagrantExecutor() *VagrantExecutor {
 	return &VagrantExecutor{Provider: "libvirt", TaskExecutor: &TaskExecutor{Context: NewExecutorContext()}}
 }
+func (e *VagrantExecutor) Clean() error {
+	e.Prune()
+	return e.TaskExecutor.Clean()
+}
 
-func (e *VagrantExecutor) Prune() {
-	e.Vagrant.Halt()
-	e.Vagrant.Destroy()
+func (d *VagrantExecutor) BoxRemove(image string) {
+	boxes, err := d.Vagrant.BoxList()
+	if err != nil {
+		d.Report("> Error in destroying the box " + err.Error())
+	}
+
+	for _, box := range boxes {
+		if box.Name == image {
+			out, err := d.Vagrant.BoxRemove(box)
+			if err != nil {
+				d.Report("> Error in destroying the box " + err.Error())
+			} else {
+				d.reportOutput(out)
+			}
+		}
+	}
+}
+
+func (d *VagrantExecutor) Prune() {
+
+	out, err := d.Vagrant.Halt()
+	if err != nil {
+		d.Report("> Error in halting the machine" + err.Error())
+	} else {
+		d.reportOutput(out)
+	}
+
+	d.BoxRemove(d.BoxImage)
+	out, err = d.Vagrant.Destroy()
+	if err != nil {
+		d.Report("> Error in destroying the machine" + err.Error())
+	} else {
+		d.reportOutput(out)
+	}
+
+}
+
+func (e *VagrantExecutor) reportOutput(out <-chan *vagrantutil.CommandOutput) {
+	for res := range out {
+		e.Report(">" + res.Line)
+		if res.Error != nil {
+			e.Report(">" + res.Error.Error())
+			return
+		}
+	}
 }
 
 func (e *VagrantExecutor) Config(image, rootdir string, t *Task) string {
-	var box string
+	var box, box_url string
 	// TODO: Add CPU and RAM from task
 	if utils.IsValidUrl(image) {
-		box = `config.vm.box_url = "` + image + `"`
+		box_url = `config.vm.box_url = "` + image + `"`
+		box = `config.vm.box = "` + t.ID + `"`
 	} else {
 		box = `config.vm.box = "` + image + `"`
 	}
@@ -74,6 +122,7 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 ` + box + `
+` + box_url + `
 ` + source + `
 config.vm.synced_folder "` + e.Context.ArtefactDir + `", "` + rootdir + artefacts + `"
 config.vm.synced_folder "` + e.Context.StorageDir + `", "` + rootdir + storages + `"
@@ -197,8 +246,6 @@ func (d *VagrantExecutor) Play(docID string) (int, error) {
 	if err != nil {
 		return 1, err
 	}
-
 	// FIXME: exit status change ?  unclear gets caught from Errors already
 	return 0, nil
-
 }
