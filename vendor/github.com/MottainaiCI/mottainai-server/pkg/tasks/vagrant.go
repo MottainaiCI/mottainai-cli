@@ -102,7 +102,6 @@ func (e *VagrantExecutor) Config(image, rootdir string, t *Task) string {
 	} else {
 		box = `config.vm.box = "` + image + `"`
 	}
-	git_sourced_repo := e.Context.SourceDir
 	artefacts := "artefacts"
 	if len(t.ArtefactPath) > 0 {
 		artefacts = t.ArtefactPath
@@ -111,23 +110,29 @@ func (e *VagrantExecutor) Config(image, rootdir string, t *Task) string {
 	if len(t.StoragePath) > 0 {
 		storages = t.StoragePath
 	}
-	var source string
-	if len(git_sourced_repo) > 0 {
-		source = `config.vm.synced_folder "` + git_sourced_repo + `", "` + rootdir + `"`
+	var env string
+
+	for _, e := range t.Environment {
+		env = env + " export " + e + "\n"
 	}
+
 	return `# -*- mode: ruby -*-
 # vi: set ft=ruby :
-
+$set_environment_variables = <<SCRIPT
+tee "/etc/profile.d/myvars.sh" > "/dev/null" <<EOF
+` + env + `
+EOF
+SCRIPT
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 ` + box + `
 ` + box_url + `
-` + source + `
 config.vm.synced_folder "` + e.Context.ArtefactDir + `", "` + rootdir + artefacts + `"
 config.vm.synced_folder "` + e.Context.StorageDir + `", "` + rootdir + storages + `"
 
  config.vm.hostname = "vagrant"
+ config.vm.provision "shell", inline: $set_environment_variables, run: "always"
 
   config.vm.provider "virtualbox" do |vb|
     # Use VBoxManage to customize the VM. For example to change memory:
@@ -139,7 +144,13 @@ end
 
 func (d *VagrantExecutor) Setup(docID string) error {
 	d.TaskExecutor.Setup(docID)
-	vagrant, err := vagrantutil.NewVagrant(d.Context.BuildDir)
+	var box string
+	if len(d.Context.SourceDir) > 0 {
+		box = d.Context.SourceDir
+	} else {
+		box = d.Context.BuildDir
+	}
+	vagrant, err := vagrantutil.NewVagrant(box)
 	if err != nil {
 		return err
 	}
