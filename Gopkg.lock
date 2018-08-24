@@ -31,13 +31,19 @@
     "pkg/utils",
     "pkg/webhook"
   ]
-  revision = "c10585f98a26a69d2e462f26c7d4bf0a0bd8fd2a"
+  revision = "e23a399c340193b7592c75a8d84232f14cdfcd23"
 
 [[projects]]
   branch = "master"
   name = "github.com/MottainaiCI/passlib"
   packages = ["."]
   revision = "f6527380e5ed8dc116bebcf3463ca46951b450b2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/MottainaiCI/vagrantutil"
+  packages = ["."]
+  revision = "975f72f00223837aa3a744fadae386f8bf40df32"
 
 [[projects]]
   branch = "master"
@@ -324,12 +330,6 @@
   name = "github.com/koding/logging"
   packages = ["."]
   revision = "8b5a689ed69b1c7cd1e3595276fc2a352d7818e0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/koding/vagrantutil"
-  packages = ["."]
-  revision = "70827343f1169931bbe84e8051fcbcf06da90eb7"
 
 [[projects]]
   name = "github.com/magiconair/properties"
