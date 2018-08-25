@@ -31,7 +31,7 @@
     "pkg/utils",
     "pkg/webhook"
   ]
-  revision = "aeb244bc5b0184670dcc900b55764c3363731231"
+  revision = "e8b3c7ba632193a439e4c836009420b042a868f9"
 
 [[projects]]
   branch = "master"
