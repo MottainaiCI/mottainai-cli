@@ -40,6 +40,8 @@ func NewNamespaceCommand() *cobra.Command {
 		newNamespaceShowCommand(),
 		newNamespaceTagCommand(),
 		newNamespaceUploadCommand(),
+		newNamespaceRemoveCommand(),
+		newNamespaceAppendCommand(),
 	)
 
 	return cmd

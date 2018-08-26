@@ -38,6 +38,7 @@ func NewStorageCommand() *cobra.Command {
 		newStorageShowCommand(),
 		newStorageListCommand(),
 		newStorageUploadCommand(),
+		newStorageRemoveCommand(),
 	)
 
 	return cmd
