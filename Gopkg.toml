@@ -28,6 +28,17 @@
 [[constraint]]
   branch = "master"
   name = "github.com/MottainaiCI/mottainai-server"
+[[override]]
+  branch = "master"
+  name = "github.com/fsouza/go-dockerclient"
+
+[[override]]
+  branch = "master"
+  name = "github.com/hlandau/degoutils"
+
+[[override]]
+  branch = "master"
+  name = "github.com/docker/docker"
 
 [prune]
   go-tests = true

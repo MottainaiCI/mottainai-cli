@@ -9,21 +9,13 @@
 package stack
 
 import (
-	"bufio"
-	"bytes"
-	"errors"
 	"fmt"
-	"io"
-	"log"
 	"math"
 	"net/url"
 	"os"
-	"os/user"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"sort"
-	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -31,6 +23,7 @@ import (
 
 const lockedToThread = "locked to thread"
 
+// These are effectively constants.
 var (
 	// TODO(maruel): Handle corrupted stack cases:
 	// - missed stack barrier
@@ -62,31 +55,13 @@ var (
 	reCreated = regexp.MustCompile("^created by (.+)\r?\n$")
 	reFunc    = regexp.MustCompile("^(.+)\\((.*)\\)\r?\n$")
 	reElided  = regexp.MustCompile("^\\.\\.\\.additional frames elided\\.\\.\\.\r?\n$")
-
-	// TODO(maruel): This is a global state, affected by ParseDump(). This will
-	// be refactored in v2.
-
-	// goroot is the GOROOT as detected in the traceback, not the on the host.
-	//
-	// It can be empty if no root was determined, for example the traceback
-	// contains only non-stdlib source references.
-	goroot string
-	// gopaths is the GOPATH as detected in the traceback, with the value being
-	// the corresponding path mapped to the host.
-	//
-	// It can be empty if only stdlib code is in the traceback or if no local
-	// sources were matched up. In the general case there is only one.
-	gopaths map[string]string
-	// Corresponding local values on the host.
-	localgoroot  = runtime.GOROOT()
-	localgopaths = getGOPATHs()
 )
 
-// Function is a function call.
+// Func is a function call.
 //
 // Go stack traces print a mangled function call, this wrapper unmangle the
 // string before printing and adds other filtering methods.
-type Function struct {
+type Func struct {
 	Raw string
 }
 
@@ -95,13 +70,13 @@ type Function struct {
 // Sadly Go is a bit confused when the package name doesn't match the directory
 // containing the source file and will use the directory name instead of the
 // real package name.
-func (f Function) String() string {
+func (f *Func) String() string {
 	s, _ := url.QueryUnescape(f.Raw)
 	return s
 }
 
 // Name is the naked function name.
-func (f Function) Name() string {
+func (f *Func) Name() string {
 	parts := strings.SplitN(filepath.Base(f.Raw), ".", 2)
 	if len(parts) == 1 {
 		return parts[0]
@@ -110,7 +85,7 @@ func (f Function) Name() string {
 }
 
 // PkgName is the package name for this function reference.
-func (f Function) PkgName() string {
+func (f *Func) PkgName() string {
 	parts := strings.SplitN(filepath.Base(f.Raw), ".", 2)
 	if len(parts) == 1 {
 		return ""
@@ -120,7 +95,7 @@ func (f Function) PkgName() string {
 }
 
 // PkgDotName returns "<package>.<func>" format.
-func (f Function) PkgDotName() string {
+func (f *Func) PkgDotName() string {
 	parts := strings.SplitN(filepath.Base(f.Raw), ".", 2)
 	s, _ := url.QueryUnescape(parts[0])
 	if len(parts) == 1 {
@@ -133,7 +108,7 @@ func (f Function) PkgDotName() string {
 }
 
 // IsExported returns true if the function is exported.
-func (f Function) IsExported() bool {
+func (f *Func) IsExported() bool {
 	name := f.Name()
 	parts := strings.Split(name, ".")
 	r, _ := utf8.DecodeRuneInString(parts[len(parts)-1])
@@ -156,7 +131,7 @@ func (a *Arg) IsPtr() bool {
 	return a.Value > 16*1024*1024 && a.Value < math.MaxInt64
 }
 
-func (a Arg) String() string {
+func (a *Arg) String() string {
 	if a.Name != "" {
 		return a.Name
 	}
@@ -173,7 +148,7 @@ type Args struct {
 	Elided    bool     // If set, it means there was a trailing ", ..."
 }
 
-func (a Args) String() string {
+func (a *Args) String() string {
 	var v []string
 	if len(a.Processed) != 0 {
 		v = make([]string, 0, len(a.Processed))
@@ -192,8 +167,8 @@ func (a Args) String() string {
 	return strings.Join(v, ", ")
 }
 
-// Equal returns true only if both arguments are exactly equal.
-func (a *Args) Equal(r *Args) bool {
+// equal returns true only if both arguments are exactly equal.
+func (a *Args) equal(r *Args) bool {
 	if a.Elided != r.Elided || len(a.Values) != len(r.Values) {
 		return false
 	}
@@ -205,9 +180,9 @@ func (a *Args) Equal(r *Args) bool {
 	return true
 }
 
-// Similar returns true if the two Args are equal or almost but not quite
+// similar returns true if the two Args are equal or almost but not quite
 // equal.
-func (a *Args) Similar(r *Args, similar Similarity) bool {
+func (a *Args) similar(r *Args, similar Similarity) bool {
 	if a.Elided != r.Elided || len(a.Values) != len(r.Values) {
 		return false
 	}
@@ -229,8 +204,8 @@ func (a *Args) Similar(r *Args, similar Similarity) bool {
 	return true
 }
 
-// Merge merges two similar Args, zapping out differences.
-func (a *Args) Merge(r *Args) Args {
+// merge merges two similar Args, zapping out differences.
+func (a *Args) merge(r *Args) Args {
 	out := Args{
 		Values: make([]Arg, len(a.Values)),
 		Elided: a.Elided,
@@ -248,81 +223,87 @@ func (a *Args) Merge(r *Args) Args {
 
 // Call is an item in the stack trace.
 type Call struct {
-	SourcePath string   // Full path name of the source file as seen in the trace
-	Line       int      // Line number
-	Func       Function // Fully qualified function name (encoded).
-	Args       Args     // Call arguments
+	SrcPath      string // Full path name of the source file as seen in the trace
+	LocalSrcPath string // Full path name of the source file as seen in the host.
+	Line         int    // Line number
+	Func         Func   // Fully qualified function name (encoded).
+	Args         Args   // Call arguments
+	IsStdlib     bool   // true if it is a Go standard library function. This includes the 'go test' generated main executable.
 }
 
-// Equal returns true only if both calls are exactly equal.
-func (c *Call) Equal(r *Call) bool {
-	return c.SourcePath == r.SourcePath && c.Line == r.Line && c.Func == r.Func && c.Args.Equal(&r.Args)
+// equal returns true only if both calls are exactly equal.
+func (c *Call) equal(r *Call) bool {
+	return c.SrcPath == r.SrcPath && c.Line == r.Line && c.Func == r.Func && c.Args.equal(&r.Args)
 }
 
-// Similar returns true if the two Call are equal or almost but not quite
+// similar returns true if the two Call are equal or almost but not quite
 // equal.
-func (c *Call) Similar(r *Call, similar Similarity) bool {
-	return c.SourcePath == r.SourcePath && c.Line == r.Line && c.Func == r.Func && c.Args.Similar(&r.Args, similar)
+func (c *Call) similar(r *Call, similar Similarity) bool {
+	return c.SrcPath == r.SrcPath && c.Line == r.Line && c.Func == r.Func && c.Args.similar(&r.Args, similar)
 }
 
-// Merge merges two similar Call, zapping out differences.
-func (c *Call) Merge(r *Call) Call {
+// merge merges two similar Call, zapping out differences.
+func (c *Call) merge(r *Call) Call {
 	return Call{
-		SourcePath: c.SourcePath,
-		Line:       c.Line,
-		Func:       c.Func,
-		Args:       c.Args.Merge(&r.Args),
+		SrcPath:      c.SrcPath,
+		Line:         c.Line,
+		Func:         c.Func,
+		Args:         c.Args.merge(&r.Args),
+		LocalSrcPath: c.LocalSrcPath,
+		IsStdlib:     c.IsStdlib,
 	}
 }
 
-// SourceName returns the base file name of the source file.
-func (c *Call) SourceName() string {
-	return filepath.Base(c.SourcePath)
+// SrcName returns the base file name of the source file.
+func (c *Call) SrcName() string {
+	return filepath.Base(c.SrcPath)
 }
 
-// SourceLine returns "source.go:line", including only the base file name.
-func (c *Call) SourceLine() string {
-	return fmt.Sprintf("%s:%d", c.SourceName(), c.Line)
+// SrcLine returns "source.go:line", including only the base file name.
+func (c *Call) SrcLine() string {
+	return fmt.Sprintf("%s:%d", c.SrcName(), c.Line)
 }
 
-// LocalSourcePath is the full path name of the source file as seen in the host.
-func (c *Call) LocalSourcePath() string {
-	// TODO(maruel): Call needs members goroot and gopaths.
-	if strings.HasPrefix(c.SourcePath, goroot) {
-		return filepath.Join(localgoroot, c.SourcePath[len(goroot):])
-	}
-	for prefix, dest := range gopaths {
-		if strings.HasPrefix(c.SourcePath, prefix) {
-			return filepath.Join(dest, c.SourcePath[len(prefix):])
-		}
-	}
-	return c.SourcePath
-}
-
-// FullSourceLine returns "/path/to/source.go:line".
+// FullSrcLine returns "/path/to/source.go:line".
 //
 // This file path is mutated to look like the local path.
-func (c *Call) FullSourceLine() string {
-	return fmt.Sprintf("%s:%d", c.SourcePath, c.Line)
+func (c *Call) FullSrcLine() string {
+	return fmt.Sprintf("%s:%d", c.SrcPath, c.Line)
 }
 
-// PkgSource is one directory plus the file name of the source file.
-func (c *Call) PkgSource() string {
-	return filepath.Join(filepath.Base(filepath.Dir(c.SourcePath)), c.SourceName())
-}
-
-const testMainSource = "_test" + string(os.PathSeparator) + "_testmain.go"
-
-// IsStdlib returns true if it is a Go standard library function. This includes
-// the 'go test' generated main executable.
-func (c *Call) IsStdlib() bool {
-	// Consider _test/_testmain.go as stdlib since it's injected by "go test".
-	return (goroot != "" && strings.HasPrefix(c.SourcePath, goroot)) || c.PkgSource() == testMainSource
+// PkgSrc is one directory plus the file name of the source file.
+func (c *Call) PkgSrc() string {
+	return filepath.Join(filepath.Base(filepath.Dir(c.SrcPath)), c.SrcName())
 }
 
 // IsPkgMain returns true if it is in the main package.
 func (c *Call) IsPkgMain() bool {
 	return c.Func.PkgName() == "main"
+}
+
+const testMainSrc = "_test" + string(os.PathSeparator) + "_testmain.go"
+
+// updateLocations initializes LocalSrcPath and IsStdlib.
+func (c *Call) updateLocations(goroot, localgoroot string, gopaths map[string]string) {
+	if c.SrcPath != "" {
+		// Always check GOROOT first, then GOPATH.
+		if strings.HasPrefix(c.SrcPath, goroot) {
+			// Replace remote GOROOT with local GOROOT.
+			c.LocalSrcPath = filepath.Join(localgoroot, c.SrcPath[len(goroot):])
+		} else {
+			// Replace remote GOPATH with local GOPATH.
+			c.LocalSrcPath = c.SrcPath
+			// TODO(maruel): Sort for deterministic behavior?
+			for prefix, dest := range gopaths {
+				if strings.HasPrefix(c.SrcPath, prefix) {
+					c.LocalSrcPath = filepath.Join(dest, c.SrcPath[len(prefix):])
+					break
+				}
+			}
+		}
+	}
+	// Consider _test/_testmain.go as stdlib since it's injected by "go test".
+	c.IsStdlib = (goroot != "" && strings.HasPrefix(c.SrcPath, goroot)) || c.PkgSrc() == testMainSrc
 }
 
 // Stack is a call stack.
@@ -331,55 +312,57 @@ type Stack struct {
 	Elided bool   // Happens when there's >100 items in Stack, currently hardcoded in package runtime.
 }
 
-// Equal returns true on if both call stacks are exactly equal.
-func (s *Stack) Equal(r *Stack) bool {
+// equal returns true on if both call stacks are exactly equal.
+func (s *Stack) equal(r *Stack) bool {
 	if len(s.Calls) != len(r.Calls) || s.Elided != r.Elided {
 		return false
 	}
 	for i := range s.Calls {
-		if !s.Calls[i].Equal(&r.Calls[i]) {
+		if !s.Calls[i].equal(&r.Calls[i]) {
 			return false
 		}
 	}
 	return true
 }
 
-// Similar returns true if the two Stack are equal or almost but not quite
+// similar returns true if the two Stack are equal or almost but not quite
 // equal.
-func (s *Stack) Similar(r *Stack, similar Similarity) bool {
+func (s *Stack) similar(r *Stack, similar Similarity) bool {
 	if len(s.Calls) != len(r.Calls) || s.Elided != r.Elided {
 		return false
 	}
 	for i := range s.Calls {
-		if !s.Calls[i].Similar(&r.Calls[i], similar) {
+		if !s.Calls[i].similar(&r.Calls[i], similar) {
 			return false
 		}
 	}
 	return true
 }
 
-// Merge merges two similar Stack, zapping out differences.
-func (s *Stack) Merge(r *Stack) *Stack {
+// merge merges two similar Stack, zapping out differences.
+func (s *Stack) merge(r *Stack) *Stack {
 	// Assumes similar stacks have the same length.
 	out := &Stack{
 		Calls:  make([]Call, len(s.Calls)),
 		Elided: s.Elided,
 	}
 	for i := range s.Calls {
-		out.Calls[i] = s.Calls[i].Merge(&r.Calls[i])
+		out.Calls[i] = s.Calls[i].merge(&r.Calls[i])
 	}
 	return out
 }
 
-// Less compares two Stack, where the ones that are less are more
-// important, so they come up front. A Stack with more private functions is
-// 'less' so it is at the top. Inversely, a Stack with only public
-// functions is 'more' so it is at the bottom.
-func (s *Stack) Less(r *Stack) bool {
+// less compares two Stack, where the ones that are less are more
+// important, so they come up front.
+//
+// A Stack with more private functions is 'less' so it is at the top.
+// Inversely, a Stack with only public functions is 'more' so it is at the
+// bottom.
+func (s *Stack) less(r *Stack) bool {
 	lStdlib := 0
 	lPrivate := 0
 	for _, c := range s.Calls {
-		if c.IsStdlib() {
+		if c.IsStdlib {
 			lStdlib++
 		} else {
 			lPrivate++
@@ -388,7 +371,7 @@ func (s *Stack) Less(r *Stack) bool {
 	rStdlib := 0
 	rPrivate := 0
 	for _, s := range r.Calls {
-		if s.IsStdlib() {
+		if s.IsStdlib {
 			rStdlib++
 		} else {
 			rPrivate++
@@ -415,10 +398,10 @@ func (s *Stack) Less(r *Stack) bool {
 		if s.Calls[x].Func.Raw > r.Calls[x].Func.Raw {
 			return true
 		}
-		if s.Calls[x].PkgSource() < r.Calls[x].PkgSource() {
+		if s.Calls[x].PkgSrc() < r.Calls[x].PkgSrc() {
 			return true
 		}
-		if s.Calls[x].PkgSource() > r.Calls[x].PkgSource() {
+		if s.Calls[x].PkgSrc() > r.Calls[x].PkgSrc() {
 			return true
 		}
 		if s.Calls[x].Line < r.Calls[x].Line {
@@ -429,6 +412,12 @@ func (s *Stack) Less(r *Stack) bool {
 		}
 	}
 	return false
+}
+
+func (s *Stack) updateLocations(goroot, localgoroot string, gopaths map[string]string) {
+	for i := range s.Calls {
+		s.Calls[i].updateLocations(goroot, localgoroot, gopaths)
+	}
 }
 
 // Signature represents the signature of one or multiple goroutines.
@@ -461,28 +450,28 @@ type Signature struct {
 	Locked    bool // Locked to an OS thread.
 }
 
-// Equal returns true only if both signatures are exactly equal.
-func (s *Signature) Equal(r *Signature) bool {
-	if s.State != r.State || !s.CreatedBy.Equal(&r.CreatedBy) || s.Locked != r.Locked || s.SleepMin != r.SleepMin || s.SleepMax != r.SleepMax {
+// equal returns true only if both signatures are exactly equal.
+func (s *Signature) equal(r *Signature) bool {
+	if s.State != r.State || !s.CreatedBy.equal(&r.CreatedBy) || s.Locked != r.Locked || s.SleepMin != r.SleepMin || s.SleepMax != r.SleepMax {
 		return false
 	}
-	return s.Stack.Equal(&r.Stack)
+	return s.Stack.equal(&r.Stack)
 }
 
-// Similar returns true if the two Signature are equal or almost but not quite
+// similar returns true if the two Signature are equal or almost but not quite
 // equal.
-func (s *Signature) Similar(r *Signature, similar Similarity) bool {
-	if s.State != r.State || !s.CreatedBy.Similar(&r.CreatedBy, similar) {
+func (s *Signature) similar(r *Signature, similar Similarity) bool {
+	if s.State != r.State || !s.CreatedBy.similar(&r.CreatedBy, similar) {
 		return false
 	}
 	if similar == ExactFlags && s.Locked != r.Locked {
 		return false
 	}
-	return s.Stack.Similar(&r.Stack, similar)
+	return s.Stack.similar(&r.Stack, similar)
 }
 
-// Merge merges two similar Signature, zapping out differences.
-func (s *Signature) Merge(r *Signature) *Signature {
+// merge merges two similar Signature, zapping out differences.
+func (s *Signature) merge(r *Signature) *Signature {
 	min := s.SleepMin
 	if r.SleepMin < min {
 		min = r.SleepMin
@@ -496,20 +485,20 @@ func (s *Signature) Merge(r *Signature) *Signature {
 		CreatedBy: s.CreatedBy, // Drop right side.
 		SleepMin:  min,
 		SleepMax:  max,
-		Stack:     *s.Stack.Merge(&r.Stack),
+		Stack:     *s.Stack.merge(&r.Stack),
 		Locked:    s.Locked || r.Locked, // TODO(maruel): This is weirdo.
 	}
 }
 
-// Less compares two Signature, where the ones that are less are more
+// less compares two Signature, where the ones that are less are more
 // important, so they come up front. A Signature with more private functions is
 // 'less' so it is at the top. Inversely, a Signature with only public
 // functions is 'more' so it is at the bottom.
-func (s *Signature) Less(r *Signature) bool {
-	if s.Stack.Less(&r.Stack) {
+func (s *Signature) less(r *Signature) bool {
+	if s.Stack.less(&r.Stack) {
 		return true
 	}
-	if r.Stack.Less(&s.Stack) {
+	if r.Stack.less(&s.Stack) {
 		return false
 	}
 	if s.Locked && !r.Locked {
@@ -527,6 +516,41 @@ func (s *Signature) Less(r *Signature) bool {
 	return false
 }
 
+// SleepString returns a string "N-M minutes" if the goroutine(s) slept for a
+// long time.
+//
+// Returns an empty string otherwise.
+func (s *Signature) SleepString() string {
+	if s.SleepMax == 0 {
+		return ""
+	}
+	if s.SleepMin != s.SleepMax {
+		return fmt.Sprintf("%d~%d minutes", s.SleepMin, s.SleepMax)
+	}
+	return fmt.Sprintf("%d minutes", s.SleepMax)
+}
+
+// CreatedByString return a short context about the origin of this goroutine
+// signature.
+func (s *Signature) CreatedByString(fullPath bool) string {
+	created := s.CreatedBy.Func.PkgDotName()
+	if created == "" {
+		return ""
+	}
+	created += " @ "
+	if fullPath {
+		created += s.CreatedBy.FullSrcLine()
+	} else {
+		created += s.CreatedBy.SrcLine()
+	}
+	return created
+}
+
+func (s *Signature) updateLocations(goroot, localgoroot string, gopaths map[string]string) {
+	s.CreatedBy.updateLocations(goroot, localgoroot, gopaths)
+	s.Stack.updateLocations(goroot, localgoroot, gopaths)
+}
+
 // Goroutine represents the state of one goroutine, including the stack trace.
 type Goroutine struct {
 	Signature      // It's stack trace, internal bits, state, which call site created it, etc.
@@ -534,182 +558,10 @@ type Goroutine struct {
 	First     bool // First is the goroutine first printed, normally the one that crashed.
 }
 
-// scanLines is similar to bufio.ScanLines except that it:
-//     - doesn't drop '\n'
-//     - doesn't strip '\r'
-//     - returns when the data is bufio.MaxScanTokenSize bytes
-func scanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if atEOF && len(data) == 0 {
-		return 0, nil, nil
-	}
-	if i := bytes.IndexByte(data, '\n'); i >= 0 {
-		return i + 1, data[0 : i+1], nil
-	}
-	if atEOF {
-		return len(data), data, nil
-	}
-	if len(data) >= bufio.MaxScanTokenSize {
-		// Returns the line even if it is not at EOF nor has a '\n', otherwise the
-		// scanner will return bufio.ErrTooLong which is definitely not what we
-		// want.
-		return len(data), data, nil
-	}
-	return 0, nil, nil
-}
-
-// ParseDump processes the output from runtime.Stack().
-//
-// It supports piping from another command and assumes there is junk before the
-// actual stack trace. The junk is streamed to out.
-func ParseDump(r io.Reader, out io.Writer) ([]Goroutine, error) {
-	goroutines := make([]Goroutine, 0, 16)
-	var goroutine *Goroutine
-	scanner := bufio.NewScanner(r)
-	scanner.Split(scanLines)
-	// TODO(maruel): Use a formal state machine. Patterns follows:
-	// - reRoutineHeader
-	//   Either:
-	//     - reUnavail
-	//     - reFunc + reFile in a loop
-	//     - reElided
-	//   Optionally ends with:
-	//     - reCreated + reFile
-	// Between each goroutine stack dump: an empty line
-	created := false
-	// firstLine is the first line after the reRoutineHeader header line.
-	firstLine := false
-	for scanner.Scan() {
-		line := scanner.Text()
-		if line == "\n" || line == "\r\n" {
-			if goroutine != nil {
-				goroutine = nil
-				continue
-			}
-		} else if line[len(line)-1] == '\n' {
-			if goroutine == nil {
-				if match := reRoutineHeader.FindStringSubmatch(line); match != nil {
-					if id, err := strconv.Atoi(match[1]); err == nil {
-						// See runtime/traceback.go.
-						// "<state>, \d+ minutes, locked to thread"
-						items := strings.Split(match[2], ", ")
-						sleep := 0
-						locked := false
-						for i := 1; i < len(items); i++ {
-							if items[i] == lockedToThread {
-								locked = true
-								continue
-							}
-							// Look for duration, if any.
-							if match2 := reMinutes.FindStringSubmatch(items[i]); match2 != nil {
-								sleep, _ = strconv.Atoi(match2[1])
-							}
-						}
-						goroutines = append(goroutines, Goroutine{
-							Signature: Signature{
-								State:    items[0],
-								SleepMin: sleep,
-								SleepMax: sleep,
-								Locked:   locked,
-							},
-							ID:    id,
-							First: len(goroutines) == 0,
-						})
-						goroutine = &goroutines[len(goroutines)-1]
-						firstLine = true
-						continue
-					}
-				}
-			} else {
-				if firstLine {
-					firstLine = false
-					if match := reUnavail.FindStringSubmatch(line); match != nil {
-						// Generate a fake stack entry.
-						goroutine.Stack.Calls = []Call{{SourcePath: "<unavailable>"}}
-						continue
-					}
-				}
-
-				if match := reFile.FindStringSubmatch(line); match != nil {
-					// Triggers after a reFunc or a reCreated.
-					num, err := strconv.Atoi(match[2])
-					if err != nil {
-						return goroutines, fmt.Errorf("failed to parse int on line: \"%s\"", line)
-					}
-					if created {
-						created = false
-						goroutine.CreatedBy.SourcePath = match[1]
-						goroutine.CreatedBy.Line = num
-					} else {
-						i := len(goroutine.Stack.Calls) - 1
-						if i < 0 {
-							return goroutines, errors.New("unexpected order")
-						}
-						goroutine.Stack.Calls[i].SourcePath = match[1]
-						goroutine.Stack.Calls[i].Line = num
-					}
-					continue
-				}
-
-				if match := reCreated.FindStringSubmatch(line); match != nil {
-					created = true
-					goroutine.CreatedBy.Func.Raw = match[1]
-					continue
-				}
-
-				if match := reFunc.FindStringSubmatch(line); match != nil {
-					args := Args{}
-					for _, a := range strings.Split(match[2], ", ") {
-						if a == "..." {
-							args.Elided = true
-							continue
-						}
-						if a == "" {
-							// Remaining values were dropped.
-							break
-						}
-						v, err := strconv.ParseUint(a, 0, 64)
-						if err != nil {
-							return goroutines, fmt.Errorf("failed to parse int on line: \"%s\"", line)
-						}
-						args.Values = append(args.Values, Arg{Value: v})
-					}
-					goroutine.Stack.Calls = append(goroutine.Stack.Calls, Call{Func: Function{match[1]}, Args: args})
-					continue
-				}
-
-				if match := reElided.FindStringSubmatch(line); match != nil {
-					goroutine.Stack.Elided = true
-					continue
-				}
-			}
-		}
-		_, _ = io.WriteString(out, line)
-		goroutine = nil
-	}
-	nameArguments(goroutines)
-	// Mutate global state.
-	// TODO(maruel): Make this part of the context instead of a global.
-	if goroot == "" {
-		findRoots(goroutines)
-	}
-	return goroutines, scanner.Err()
-}
-
-// NoRebase disables GOROOT and GOPATH guessing in ParseDump().
-//
-// BUG: This function will be removed in v2, as ParseDump() will accept a flag
-// explicitly.
-func NoRebase() {
-	goroot = runtime.GOROOT()
-	gopaths = map[string]string{}
-	for _, p := range getGOPATHs() {
-		gopaths[p] = p
-	}
-}
-
 // Private stuff.
 
-func nameArguments(goroutines []Goroutine) {
+// nameArguments is a post-processing step where Args are 'named' with numbers.
+func nameArguments(goroutines []*Goroutine) {
 	// Set a name for any pointer occurring more than once.
 	type object struct {
 		args      []*Arg
@@ -764,139 +616,6 @@ func nameArguments(goroutines []Goroutine) {
 		}
 		nextID++
 	}
-}
-
-// hasPathPrefix returns true if any of s is the prefix of p.
-func hasPathPrefix(p string, s map[string]string) bool {
-	for prefix := range s {
-		if strings.HasPrefix(p, prefix+"/") {
-			return true
-		}
-	}
-	return false
-}
-
-// getFiles returns all the source files deduped and ordered.
-func getFiles(goroutines []Goroutine) []string {
-	files := map[string]struct{}{}
-	for _, g := range goroutines {
-		for _, c := range g.Stack.Calls {
-			files[c.SourcePath] = struct{}{}
-		}
-	}
-	out := make([]string, 0, len(files))
-	for f := range files {
-		out = append(out, f)
-	}
-	sort.Strings(out)
-	return out
-}
-
-// splitPath splits a path into its components.
-//
-// The first item has its initial path separator kept.
-func splitPath(p string) []string {
-	if p == "" {
-		return nil
-	}
-	var out []string
-	s := ""
-	for _, c := range p {
-		if c != '/' || (len(out) == 0 && strings.Count(s, "/") == len(s)) {
-			s += string(c)
-		} else if s != "" {
-			out = append(out, s)
-			s = ""
-		}
-	}
-	if s != "" {
-		out = append(out, s)
-	}
-	return out
-}
-
-// isFile returns true if the path is a valid file.
-func isFile(p string) bool {
-	// TODO(maruel): Is it faster to open the file or to stat it? Worth a perf
-	// test on Windows.
-	i, err := os.Stat(p)
-	return err == nil && !i.IsDir()
-}
-
-// isRootIn returns a root if the file split in parts is rooted in root.
-func rootedIn(root string, parts []string) string {
-	//log.Printf("rootIn(%s, %v)", root, parts)
-	for i := 1; i < len(parts); i++ {
-		suffix := filepath.Join(parts[i:]...)
-		if isFile(filepath.Join(root, suffix)) {
-			return filepath.Join(parts[:i]...)
-		}
-	}
-	return ""
-}
-
-// findRoots sets global variables goroot and gopath.
-//
-// TODO(maruel): In v2, it will be a property of the new struct that will
-// contain the goroutines.
-func findRoots(goroutines []Goroutine) {
-	gopaths = map[string]string{}
-	for _, f := range getFiles(goroutines) {
-		// TODO(maruel): Could a stack dump have mixed cases? I think it's
-		// possible, need to confirm and handle.
-		//log.Printf("  Analyzing %s", f)
-		if goroot != "" && strings.HasPrefix(f, goroot+"/") {
-			continue
-		}
-		if gopaths != nil && hasPathPrefix(f, gopaths) {
-			continue
-		}
-		parts := splitPath(f)
-		if goroot == "" {
-			if r := rootedIn(localgoroot, parts); r != "" {
-				goroot = r
-				log.Printf("Found GOROOT=%s", goroot)
-				continue
-			}
-		}
-		found := false
-		for _, l := range localgopaths {
-			if r := rootedIn(l, parts); r != "" {
-				log.Printf("Found GOPATH=%s", r)
-				gopaths[r] = l
-				found = true
-				break
-			}
-		}
-		if !found {
-			// If the source is not found, just too bad.
-			//log.Printf("Failed to find locally: %s / %s", f, goroot)
-		}
-	}
-}
-
-func getGOPATHs() []string {
-	var out []string
-	for _, v := range filepath.SplitList(os.Getenv("GOPATH")) {
-		// Disallow non-absolute paths?
-		if v != "" {
-			out = append(out, v)
-		}
-	}
-	if len(out) == 0 {
-		homeDir := ""
-		u, err := user.Current()
-		if err != nil {
-			homeDir = os.Getenv("HOME")
-			if homeDir == "" {
-				panic(fmt.Sprintf("Could not get current user or $HOME: %s\n", err.Error()))
-			}
-		} else {
-			homeDir = u.HomeDir
-		}
-		out = []string{homeDir + "go"}
-	}
-	return out
 }
 
 type uint64Slice []uint64

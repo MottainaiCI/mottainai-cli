@@ -1,4 +1,7 @@
-// +build linux
+// Use and distribution licensed under the Apache license version 2.
+//
+// See the COPYING file in the root project directory for full text.
+//
 
 package ghw
 
@@ -82,6 +85,22 @@ func DiskSerialNumber(disk string) string {
 	// primary SCSI disk (/dev/sda) is represented as a symbolic link named
 	// /dev/disk/by-id/scsi-3600508e000000000f8253aac9a1abd0c. The serial
 	// number is 3600508e000000000f8253aac9a1abd0c.
+	//
+	// Some SATA drives (or rather, disk drive vendors) use inconsistent ways
+	// of putting the serial numbers of the disks in this symbolic link name.
+	// For example, here are two SATA drive identifiers (examples come from
+	// @antylama on GH Issue #19):
+	//
+	// /dev/disk/by-id/ata-AXIOMTEK_Corp.-FSA032G300MW5T-H_BCA11704240020001
+	//
+	// in the above identifier, "BCA11704240020001" is the drive serial number.
+	// The vendor name along with what appears to be a vendor model name
+	// (FSA032G300MW5T-H) are also included in the symbolic link name.
+	//
+	// /dev/disk/by-id/ata-WDC_WD10JFCX-68N6GN0_WD-WX31A76R3KFS
+	//
+	// in the above identifier, the serial number of the disk is actually
+	// WD-WX31A76R3KFS, not WX31A76R3KFS. Go figure...
 	path := filepath.Join(PathDevDiskById)
 	links, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -98,8 +117,13 @@ func DiskSerialNumber(disk string) string {
 		if dest != disk {
 			continue
 		}
-		parts := strings.Split(lname, "-")
-		return parts[1]
+		pos := strings.LastIndex(lname, "_")
+		if pos < 0 {
+			pos = strings.Index(lname, "-")
+		}
+		if pos >= 0 {
+			return lname[pos+1:]
+		}
 	}
 	return "unknown"
 }
@@ -226,25 +250,65 @@ func PartitionInfo(part string) (string, string, bool) {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line[0] != '/' {
+		entry := parseMtabEntry(line)
+		if entry == nil || entry.Partition != part {
 			continue
 		}
-		fields := strings.Fields(line)
-		if fields[0] != part {
-			continue
-		}
-		opts := strings.Split(fields[3], ",")
 		ro := true
-		for _, opt := range opts {
+		for _, opt := range entry.Options {
 			if opt == "rw" {
 				ro = false
 				break
 			}
 		}
 
-		return fields[1], fields[2], ro
+		return entry.Mountpoint, entry.FilesystemType, ro
 	}
 	return "", "", true
+}
+
+type mtabEntry struct {
+	Partition      string
+	Mountpoint     string
+	FilesystemType string
+	Options        []string
+}
+
+func parseMtabEntry(line string) *mtabEntry {
+	// /etc/mtab entries for mounted partitions look like this:
+	// /dev/sda6 / ext4 rw,relatime,errors=remount-ro,data=ordered 0 0
+	if line[0] != '/' {
+		return nil
+	}
+	fields := strings.Fields(line)
+
+	if len(fields) < 4 {
+		return nil
+	}
+
+	// We do some special parsing of the mountpoint, which may contain space,
+	// tab and newline characters, encoded into the mtab entry line using their
+	// octal-to-string representations. From the GNU mtab man pages:
+	//
+	//   "Therefore these characters are encoded in the files and the getmntent
+	//   function takes care of the decoding while reading the entries back in.
+	//   '\040' is used to encode a space character, '\011' to encode a tab
+	//   character, '\012' to encode a newline character, and '\\' to encode a
+	//   backslash."
+	mp := fields[1]
+	r := strings.NewReplacer(
+		"\\011", "\t", "\\012", "\n", "\\040", " ", "\\\\", "\\",
+	)
+	mp = r.Replace(mp)
+
+	res := &mtabEntry{
+		Partition:      fields[0],
+		Mountpoint:     mp,
+		FilesystemType: fields[2],
+	}
+	opts := strings.Split(fields[3], ",")
+	res.Options = opts
+	return res
 }
 
 func PartitionMountPoint(part string) string {
