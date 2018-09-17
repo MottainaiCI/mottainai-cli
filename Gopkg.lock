@@ -31,7 +31,7 @@
     "pkg/utils",
     "pkg/webhook"
   ]
-  revision = "e10986a77e2ef7bd03581f3e9215d1ab6b4ce50f"
+  revision = "3d48b0a142724ce05ee2b2df4efe29cc6d24db77"
 
 [[projects]]
   branch = "master"
@@ -204,10 +204,10 @@
   version = "v0.3.3"
 
 [[projects]]
+  branch = "master"
   name = "github.com/docker/libnetwork"
   packages = ["ipamutils"]
-  revision = "6d23f11e681f24ee31802939e243fe8be41a75eb"
-  version = "v0.8.0-dev.2"
+  revision = "20461b8539336a4b5fcf551a86dd24ebae211984"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -760,6 +760,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8462704ffb872932307649a1712d5f84a5ad4d4a92843fa3bb540c895aee0594"
+  inputs-digest = "18185fe9775f6aff485bc62d7712f4bf0f65381114032d57eb09d4d0d15be807"
   solver-name = "gps-cdcl"
   solver-version = 1

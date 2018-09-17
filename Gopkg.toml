@@ -40,6 +40,11 @@
   branch = "master"
   name = "github.com/docker/docker"
 
+[[override]]
+  branch = "master"
+  name = "github.com/docker/libnetwork"
+
+
 [prune]
   go-tests = true
   unused-packages = true
