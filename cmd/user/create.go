@@ -43,7 +43,7 @@ func newUserCreateCommand() *cobra.Command {
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
 			dat := make(map[string]interface{})
-			u := &user.User{}
+			u := &user.UserForm{}
 
 			name, err := cmd.Flags().GetString("name")
 			tools.CheckError(err)
