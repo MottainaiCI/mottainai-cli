@@ -12,13 +12,13 @@ import (
 )
 
 type Disk struct {
-	Name            string
-	SizeBytes       uint64
-	SectorSizeBytes uint64
-	BusType         string
-	Vendor          string
-	SerialNumber    string
-	Partitions      []*Partition
+	Name                   string
+	SizeBytes              uint64
+	PhysicalBlockSizeBytes uint64
+	BusType                string
+	Vendor                 string
+	SerialNumber           string
+	Partitions             []*Partition
 }
 
 type Partition struct {
@@ -47,7 +47,7 @@ func Block() (*BlockInfo, error) {
 }
 
 func (i *BlockInfo) String() string {
-	tpbs := "unknown"
+	tpbs := UNKNOWN
 	if i.TotalPhysicalBytes > 0 {
 		tpb := i.TotalPhysicalBytes
 		unit, unitStr := unitWithString(int64(tpb))
@@ -71,7 +71,7 @@ func (d *Disk) String() string {
 	if d.SerialNumber != "" {
 		serial = " - SN #" + d.SerialNumber
 	}
-	sizeStr := "unknown"
+	sizeStr := UNKNOWN
 	if d.SizeBytes > 0 {
 		size := d.SizeBytes
 		unit, unitStr := unitWithString(int64(size))
@@ -97,7 +97,7 @@ func (p *Partition) String() string {
 	if p.MountPoint != "" {
 		mountStr = fmt.Sprintf(" mounted@%s", p.MountPoint)
 	}
-	sizeStr := "unknown"
+	sizeStr := UNKNOWN
 	if p.SizeBytes > 0 {
 		size := p.SizeBytes
 		unit, unitStr := unitWithString(int64(size))
