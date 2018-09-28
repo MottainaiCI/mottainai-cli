@@ -27,32 +27,58 @@ import (
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	user "github.com/MottainaiCI/mottainai-server/pkg/user"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
 
-func newUserRemoveCommand() *cobra.Command {
+func newUserCreateCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "remove <token-id> [OPTIONS]",
-		Short: "Remove a user",
-		Args:  cobra.RangeArgs(1, 1),
+		Use:   "create --name [user] --email [email] --password [password] [OPTIONS]",
+		Short: "Create a user",
+		Args:  cobra.OnlyValidArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
 			var v *viper.Viper = setting.Configuration.Viper
 
 			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			dat := make(map[string]interface{})
+			u := &user.User{}
 
-			id := args[0]
-			if len(id) == 0 {
-				log.Fatalln("You need to define a user id")
+			name, err := cmd.Flags().GetString("name")
+			tools.CheckError(err)
+			email, err := cmd.Flags().GetString("email")
+			tools.CheckError(err)
+			password, err := cmd.Flags().GetString("password")
+			tools.CheckError(err)
+
+			if name == "" {
+				log.Fatalln("Missing mandatory parameter name")
+			}
+			if email == "" {
+				log.Fatalln("Missing mandatory parameter email")
+			}
+			if password == "" {
+				log.Fatalln("Missing mandatory parameter password")
 			}
 
-			res, err := fetcher.GetOptions("/api/user/delete/"+id, map[string]string{})
+			u.Name = name
+			u.Email = email
+			u.Password = password
+
+			dat = u.ToMap()
+
+			res, err := fetcher.GenericForm("/api/user/create", dat)
 			tools.CheckError(err)
 
 			fmt.Println(string(res))
 		},
 	}
+
+	var flags = cmd.Flags()
+	flags.String("email", "", "Email of the user")
+	flags.String("name", "", "Name of the user")
+	flags.String("password", "", "Password of the user")
 
 	return cmd
 }

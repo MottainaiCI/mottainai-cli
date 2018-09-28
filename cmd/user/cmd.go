@@ -32,6 +32,7 @@ func NewUserCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
+		newUserCreateCommand(),
 		newUserSetCommand(),
 		newUserListCommand(),
 		newUserRemoveCommand(),
