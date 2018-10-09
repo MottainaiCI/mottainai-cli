@@ -33,7 +33,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newUserListCommand() *cobra.Command {
+func newUserListCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "list [OPTIONS]",
 		Short: "List users",
@@ -44,9 +44,9 @@ func newUserListCommand() *cobra.Command {
 			var task_table [][]string
 			var quiet bool
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.GetJSONOptions("/api/user/list", map[string]string{}, &tlist)
 
 			quiet, err = cmd.Flags().GetBool("quiet")

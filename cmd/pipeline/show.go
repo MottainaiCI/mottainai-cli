@@ -32,7 +32,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newPipelineShowCommand() *cobra.Command {
+func newPipelineShowCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "show <pipeline-id> [OPTIONS]",
 		Short: "Show a pipeline",
@@ -40,14 +40,14 @@ func newPipelineShowCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var t citasks.Pipeline
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a pipeline id")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.GetJSONOptions("/api/tasks/pipeline/"+id, map[string]string{}, &t)
 			b, err := json.MarshalIndent(t, "", "  ")
 			if err != nil {

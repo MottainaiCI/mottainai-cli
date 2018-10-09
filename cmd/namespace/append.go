@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNamespaceAppendCommand() *cobra.Command {
+func newNamespaceAppendCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "append <namespace> --from <task-id> [OPTIONS]",
 		Short: "Append artefacts from a task to a namespace",
@@ -40,9 +40,9 @@ func newNamespaceAppendCommand() *cobra.Command {
 			var err error
 			var from string
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			from, err = cmd.Flags().GetString("from")
 			tools.CheckError(err)
@@ -52,7 +52,8 @@ func newNamespaceAppendCommand() *cobra.Command {
 				log.Fatalln("You need to define a namespace")
 			}
 
-			res, err := fetcher.GetOptions("/api/namespace/"+ns+"/append/"+from, map[string]string{})
+			res, err := fetcher.GetOptions("/api/namespace/"+ns+"/append/"+from,
+				map[string]string{})
 			tools.CheckError(err)
 			fmt.Println(string(res))
 		},

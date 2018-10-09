@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package plan
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewPlanCommand() *cobra.Command {
+func NewPlanCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "plan [command] [OPTIONS]",
@@ -32,10 +33,10 @@ func NewPlanCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newPlanCreateCommand(),
-		newPlanListCommand(),
-		newPlanRemoveCommand(),
-		newPlanShowCommand(),
+		newPlanCreateCommand(config),
+		newPlanListCommand(config),
+		newPlanRemoveCommand(config),
+		newPlanShowCommand(config),
 	)
 
 	return cmd

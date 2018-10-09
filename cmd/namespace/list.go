@@ -30,7 +30,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNamespaceListCommand() *cobra.Command {
+func newNamespaceListCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "list [OPTIONS]",
 		Short: "List namespaces",
@@ -39,9 +39,9 @@ func newNamespaceListCommand() *cobra.Command {
 			var tlist []string
 			var ns_table [][]string
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			fetcher.GetJSONOptions("/api/namespace/list", map[string]string{}, &tlist)
 

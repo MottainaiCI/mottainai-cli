@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newStorageCreateCommand() *cobra.Command {
+func newStorageCreateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "create <storage-name> [OPTIONS]",
 		Short: "Create a storage",
@@ -39,14 +39,14 @@ func newStorageCreateCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			storage := args[0]
 			if len(storage) == 0 {
 				log.Fatalln("You need to define a storage name")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			res, err := fetcher.GetOptions("/api/storage/"+storage+"/create", map[string]string{})
 			tools.CheckError(err)
 			fmt.Println(string(res))

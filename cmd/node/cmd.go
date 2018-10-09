@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package node
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewNodeCommand() *cobra.Command {
+func NewNodeCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "node [command] [OPTIONS]",
@@ -32,10 +33,10 @@ func NewNodeCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newNodeCreateCommand(),
-		newNodeListCommand(),
-		newNodeShowCommand(),
-		newNodeRemoveCommand(),
+		newNodeCreateCommand(config),
+		newNodeListCommand(config),
+		newNodeShowCommand(config),
+		newNodeRemoveCommand(config),
 	)
 
 	return cmd

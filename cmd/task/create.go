@@ -35,7 +35,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskCreateCommand() *cobra.Command {
+func newTaskCreateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "create [OPTIONS]",
 		Short: "Create a new task",
@@ -44,9 +44,9 @@ func newTaskCreateCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
 
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			to, _ := cmd.Flags().GetString("to")
 			dat := make(map[string]interface{})
 			t := &task.Task{}

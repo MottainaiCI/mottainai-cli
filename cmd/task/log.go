@@ -30,20 +30,20 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskLogCommand() *cobra.Command {
+func newTaskLogCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "log <taskid> [OPTIONS]",
 		Short: "Show log of a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")
 			}
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			buff, err := fetcher.GetOptions("/api/tasks/stream_output/"+id+"/0", map[string]string{})
 			if err != nil {
 				panic(err)

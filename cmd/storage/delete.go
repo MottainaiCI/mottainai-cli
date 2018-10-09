@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newStorageDeleteCommand() *cobra.Command {
+func newStorageDeleteCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "delete <storage-id> [OPTIONS]",
 		Short: "Delete a storage",
@@ -39,14 +39,14 @@ func newStorageDeleteCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			storage := args[0]
 			if len(storage) == 0 {
 				log.Fatalln("You need to define a storage id")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			res, err := fetcher.GetOptions("/api/storage/"+storage+"/delete", map[string]string{})
 			tools.CheckError(err)
 			fmt.Println(string(res))

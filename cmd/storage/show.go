@@ -29,7 +29,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newStorageShowCommand() *cobra.Command {
+func newStorageShowCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "show <storage-id> [OPTIONS]",
 		Short: "Show artefacts belonging to a storage",
@@ -37,14 +37,14 @@ func newStorageShowCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var tlist []string
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			storage := args[0]
 			if len(storage) == 0 {
 				log.Fatalln("You need to define a storage id")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.GetJSONOptions("/api/storage/"+storage+"/list", map[string]string{}, &tlist)
 			for _, i := range tlist {
 				log.Println("- " + i)

@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNamespaceCloneCommand() *cobra.Command {
+func newNamespaceCloneCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "clone <namespace> --from <ns_orig> [OPTIONS]",
 		Short: "clone a namespace",
@@ -40,9 +40,9 @@ func newNamespaceCloneCommand() *cobra.Command {
 			var err error
 			var ns_orig string
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			ns_orig, err = cmd.Flags().GetString("from")
 			tools.CheckError(err)
@@ -52,7 +52,8 @@ func newNamespaceCloneCommand() *cobra.Command {
 				log.Fatalln("You need to define a namespace")
 			}
 
-			res, err := fetcher.GetOptions("/api/namespace/"+ns+"/clone/"+ns_orig, map[string]string{})
+			res, err := fetcher.GetOptions("/api/namespace/"+ns+"/clone/"+ns_orig,
+				map[string]string{})
 			tools.CheckError(err)
 			fmt.Println(string(res))
 		},

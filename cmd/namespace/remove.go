@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNamespaceRemoveCommand() *cobra.Command {
+func newNamespaceRemoveCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "remove <namespace> <absolute_path> [OPTIONS]",
 		Short: "Remove a given path from a namespace",
@@ -39,9 +39,9 @@ func newNamespaceRemoveCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			ns := args[0]
 			path := args[1]

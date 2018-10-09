@@ -32,7 +32,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newStorageListCommand() *cobra.Command {
+func newStorageListCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "list [OPTIONS]",
 		Short: "List storages",
@@ -41,9 +41,9 @@ func newStorageListCommand() *cobra.Command {
 			var n []storage.Storage
 			var storage_table [][]string
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.GetJSONOptions("/api/storage/list", map[string]string{}, &n)
 
 			log.Println("Available storages: ")

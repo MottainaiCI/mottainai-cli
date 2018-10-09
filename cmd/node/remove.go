@@ -31,21 +31,21 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNodeRemoveCommand() *cobra.Command {
+func newNodeRemoveCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "remove <node-id> [OPTIONS]",
 		Short: "Remove a node",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a node id")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			res, err := fetcher.GetOptions("/api/nodes/delete/"+id, map[string]string{})
 			tools.CheckError(err)
 

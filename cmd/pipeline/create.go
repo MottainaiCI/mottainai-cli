@@ -35,7 +35,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newPipelineCreateCommand() *cobra.Command {
+func newPipelineCreateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "create [OPTIONS]",
 		Short: "Create a new pipeline",
@@ -45,9 +45,9 @@ func newPipelineCreateCommand() *cobra.Command {
 			var err error
 			var fetcher *client.Fetcher
 			var jsonfile string
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			var p = &task.Pipeline{}
 			dat := make(map[string]interface{})
 

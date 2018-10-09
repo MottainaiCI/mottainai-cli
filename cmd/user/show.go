@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newUserShowCommand() *cobra.Command {
+func newUserShowCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "show <id>",
 		Short: "Display user information",
@@ -41,7 +41,7 @@ func newUserShowCommand() *cobra.Command {
 			var err error
 			var fetcher *client.Fetcher
 			var res []byte
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			if len(args) == 0 {
 				log.Fatalln("You need to define a user id")
@@ -51,7 +51,7 @@ func newUserShowCommand() *cobra.Command {
 				log.Fatalln("You need to define a user id")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			res, err = fetcher.GetOptions("/api/user/show/"+id, map[string]string{})
 

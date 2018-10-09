@@ -32,7 +32,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newSettingCreateCommand() *cobra.Command {
+func newSettingCreateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "create <key> <value>",
 		Short: "Create a new setting",
@@ -41,8 +41,8 @@ func newSettingCreateCommand() *cobra.Command {
 		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			var v *viper.Viper = config.Viper
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			dat := make(map[string]interface{})
 
 			if len(args) != 2 {

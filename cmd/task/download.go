@@ -29,14 +29,14 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskDownloadCommand() *cobra.Command {
+func newTaskDownloadCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "download <taskid> <target> [OPTIONS]",
 		Short: "Download task artefacts",
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			id := args[0]
 			target := args[1]
@@ -44,7 +44,7 @@ func newTaskDownloadCommand() *cobra.Command {
 				log.Fatalln("You need to define a task id and a target")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.ActiveReports = true
 			if err := fetcher.DownloadArtefactsFromTask(id, target); err != nil {
 				log.Fatalln(err)

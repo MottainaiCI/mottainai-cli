@@ -33,7 +33,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newProfileCreateCommand() *cobra.Command {
+func newProfileCreateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "create <profile-name> <api-url> [api-key] [OPTIONS]",
 		Short: "Create a new profile",
@@ -42,7 +42,7 @@ func newProfileCreateCommand() *cobra.Command {
 			var err error
 			var name, master, apikey, f string
 			var conf common.ProfileConf
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			name = args[0]
 			master = args[1]

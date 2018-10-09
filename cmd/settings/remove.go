@@ -31,16 +31,16 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newSettingRemoveCommand() *cobra.Command {
+func newSettingRemoveCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "remove <setting key> [OPTIONS]",
 		Short: "Remove a setting key",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			id := args[0]
 			if len(id) == 0 {

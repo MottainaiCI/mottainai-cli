@@ -31,15 +31,15 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newSettingUpdateCommand() *cobra.Command {
+func newSettingUpdateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "update <key> <value> [OPTIONS]",
 		Short: "Update a system setting",
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			var v *viper.Viper = config.Viper
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			dat := make(map[string]interface{})
 
 			if len(args) != 2 {

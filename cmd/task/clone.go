@@ -31,21 +31,21 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskCloneCommand() *cobra.Command {
+func newTaskCloneCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "clone <taskid> [OPTIONS]",
 		Short: "clone a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			res, err := fetcher.GetOptions("/api/tasks/clone/"+id, map[string]string{})
 			tools.CheckError(err)
 			fmt.Println(string(res))

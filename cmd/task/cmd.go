@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package task
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewTaskCommand() *cobra.Command {
+func NewTaskCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "task [command] [OPTIONS]",
@@ -32,19 +33,19 @@ func NewTaskCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newTaskArtefactsCommand(),
-		newTaskAttachCommand(),
-		newTaskCloneCommand(),
-		newTaskCreateCommand(),
-		newTaskDownloadCommand(),
-		newTaskExecuteCommand(),
-		newTaskListCommand(),
-		newTaskLogCommand(),
-		newTaskRemoveCommand(),
-		newTaskShowCommand(),
-		newTaskStartCommand(),
-		newTaskStopCommand(),
-		newTaskMonitorCommand(),
+		newTaskArtefactsCommand(config),
+		newTaskAttachCommand(config),
+		newTaskCloneCommand(config),
+		newTaskCreateCommand(config),
+		newTaskDownloadCommand(config),
+		newTaskExecuteCommand(config),
+		newTaskListCommand(config),
+		newTaskLogCommand(config),
+		newTaskRemoveCommand(config),
+		newTaskShowCommand(config),
+		newTaskStartCommand(config),
+		newTaskStopCommand(config),
+		newTaskMonitorCommand(config),
 		//newTaskPlayCommand(),
 	)
 

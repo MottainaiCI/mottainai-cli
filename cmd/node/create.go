@@ -30,16 +30,16 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNodeCreateCommand() *cobra.Command {
+func newNodeCreateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "create [OPTIONS]",
 		Short: "Create a new node",
 		Args:  cobra.OnlyValidArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			res, err := fetcher.GetOptions("/api/nodes/add", map[string]string{})
 			tools.CheckError(err)

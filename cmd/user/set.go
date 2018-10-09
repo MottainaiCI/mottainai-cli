@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newUserSetCommand() *cobra.Command {
+func newUserSetCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "set [OPTIONS]",
 		Short: "Set/unset admin flag to user",
@@ -41,7 +41,7 @@ func newUserSetCommand() *cobra.Command {
 			var err error
 			var fetcher *client.Fetcher
 			var res []byte
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 			t, err := cmd.Flags().GetString("type")
 
 			if len(args) == 0 {
@@ -52,7 +52,7 @@ func newUserSetCommand() *cobra.Command {
 			if len(id) == 0 {
 				log.Fatalln("You need to define a user id")
 			}
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			if t == "admin" {
 				res, err = fetcher.GetOptions("/api/user/set/admin/"+id, map[string]string{})

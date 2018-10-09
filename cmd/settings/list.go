@@ -32,7 +32,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newSettingListCommand() *cobra.Command {
+func newSettingListCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "list [OPTIONS]",
 		Short: "List settings",
@@ -43,9 +43,9 @@ func newSettingListCommand() *cobra.Command {
 			var setting_table [][]string
 			var quiet bool
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.GetJSONOptions("/api/settings", map[string]string{}, &tlist)
 
 			quiet, err = cmd.Flags().GetBool("quiet")

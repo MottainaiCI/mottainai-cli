@@ -31,23 +31,23 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskInspectCommand() *cobra.Command {
+func newTaskInspectCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "inspect <taskid> [OPTIONS]",
 		Short: "Inspect a task for debugging",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")
 			}
 
-			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.BaseURL = v.GetString("master")
 
-			th := citasks.DefaultTaskHandler()
+			th := citasks.DefaultTaskHandler(config)
 
 			task_info := th.FetchTask(fetcher)
 			fmt.Println(task_info)

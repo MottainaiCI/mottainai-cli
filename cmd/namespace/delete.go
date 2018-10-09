@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNamespaceDeleteCommand() *cobra.Command {
+func newNamespaceDeleteCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "delete <namespace> [OPTIONS]",
 		Short: "Delete a namespace",
@@ -39,9 +39,9 @@ func newNamespaceDeleteCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			ns := args[0]
 			if len(ns) == 0 {

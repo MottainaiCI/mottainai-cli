@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package settingcmd
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewSettingCommand() *cobra.Command {
+func NewSettingCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "setting [command] [OPTIONS]",
@@ -32,10 +33,10 @@ func NewSettingCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newSettingCreateCommand(),
-		newSettingListCommand(),
-		newSettingRemoveCommand(),
-		newSettingUpdateCommand(),
+		newSettingCreateCommand(config),
+		newSettingListCommand(config),
+		newSettingRemoveCommand(config),
+		newSettingUpdateCommand(config),
 	)
 
 	return cmd

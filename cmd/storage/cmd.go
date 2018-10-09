@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package storage
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewStorageCommand() *cobra.Command {
+func NewStorageCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "storage [command] [OPTIONS]",
@@ -32,13 +33,13 @@ func NewStorageCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newStorageCreateCommand(),
-		newStorageDeleteCommand(),
-		newStorageDownloadCommand(),
-		newStorageShowCommand(),
-		newStorageListCommand(),
-		newStorageUploadCommand(),
-		newStorageRemoveCommand(),
+		newStorageCreateCommand(config),
+		newStorageDeleteCommand(config),
+		newStorageDownloadCommand(config),
+		newStorageShowCommand(config),
+		newStorageListCommand(config),
+		newStorageUploadCommand(config),
+		newStorageRemoveCommand(config),
 	)
 
 	return cmd

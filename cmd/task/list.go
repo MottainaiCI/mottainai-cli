@@ -35,7 +35,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskListCommand() *cobra.Command {
+func newTaskListCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "list [OPTIONS]",
 		Short: "List tasks",
@@ -44,9 +44,9 @@ func newTaskListCommand() *cobra.Command {
 			var err error
 			var quiet bool
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			var tlist []citasks.Task
 			fetcher.GetJSONOptions("/api/tasks", map[string]string{}, &tlist)

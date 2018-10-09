@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package simulate
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewSimulateCommand() *cobra.Command {
+func NewSimulateCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "simulate [command] [OPTIONS]",
@@ -32,7 +33,7 @@ func NewSimulateCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newSimulatePrintCommand(),
+		newSimulatePrintCommand(config),
 	)
 
 	return cmd
