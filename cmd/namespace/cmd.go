@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package namespace
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewNamespaceCommand() *cobra.Command {
+func NewNamespaceCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "namespace [command] [OPTIONS]",
@@ -32,16 +33,16 @@ func NewNamespaceCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newNamespaceCloneCommand(),
-		newNamespaceCreateCommand(),
-		newNamespaceDeleteCommand(),
-		newNamespaceDownloadCommand(),
-		newNamespaceListCommand(),
-		newNamespaceShowCommand(),
-		newNamespaceTagCommand(),
-		newNamespaceUploadCommand(),
-		newNamespaceRemoveCommand(),
-		newNamespaceAppendCommand(),
+		newNamespaceCloneCommand(config),
+		newNamespaceCreateCommand(config),
+		newNamespaceDeleteCommand(config),
+		newNamespaceDownloadCommand(config),
+		newNamespaceListCommand(config),
+		newNamespaceShowCommand(config),
+		newNamespaceTagCommand(config),
+		newNamespaceUploadCommand(config),
+		newNamespaceRemoveCommand(config),
+		newNamespaceAppendCommand(config),
 	)
 
 	return cmd

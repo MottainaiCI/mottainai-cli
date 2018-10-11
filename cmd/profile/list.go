@@ -32,14 +32,14 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newProfileListCommand() *cobra.Command {
+func newProfileListCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "list [OPTIONS]",
 		Short: "List profiles",
 		Args:  cobra.OnlyValidArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			if v.Get("profiles") == nil {
 				fmt.Println("No profiles available.")

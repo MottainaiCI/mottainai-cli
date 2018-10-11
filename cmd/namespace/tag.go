@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNamespaceTagCommand() *cobra.Command {
+func newNamespaceTagCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "tag <namespace> --from <task-id> [OPTIONS]",
 		Short: "Tag a namespace",
@@ -40,9 +40,9 @@ func newNamespaceTagCommand() *cobra.Command {
 			var err error
 			var from string
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			from, err = cmd.Flags().GetString("from")
 			tools.CheckError(err)

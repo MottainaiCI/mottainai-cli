@@ -29,16 +29,16 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newStorageDownloadCommand() *cobra.Command {
+func newStorageDownloadCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "download <storage-id> <target> [OPTIONS]",
 		Short: "Download storage artefacts",
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.ActiveReports = true
 
 			storage := args[0]

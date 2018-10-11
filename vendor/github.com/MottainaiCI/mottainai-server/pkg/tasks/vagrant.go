@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/MottainaiCI/mottainai-server/pkg/utils"
 	vagrantutil "github.com/MottainaiCI/vagrantutil"
 )
@@ -39,8 +40,13 @@ type VagrantExecutor struct {
 	BoxImage string
 }
 
-func NewVagrantExecutor() *VagrantExecutor {
-	return &VagrantExecutor{Provider: "libvirt", TaskExecutor: &TaskExecutor{Context: NewExecutorContext()}}
+func NewVagrantExecutor(config *setting.Config) *VagrantExecutor {
+	return &VagrantExecutor{
+		Provider: "libvirt",
+		TaskExecutor: &TaskExecutor{
+			Context: NewExecutorContext(),
+			Config:  config,
+		}}
 }
 func (e *VagrantExecutor) Clean() error {
 	e.Prune()
@@ -241,7 +247,7 @@ func (d *VagrantExecutor) Setup(docID string) error {
 
 func (d *VagrantExecutor) Play(docID string) (int, error) {
 	fetcher := d.MottainaiClient
-	th := DefaultTaskHandler()
+	th := DefaultTaskHandler(d.TaskExecutor.Config)
 	task_info := th.FetchTask(fetcher)
 	image := task_info.Image
 	starttime := time.Now()

@@ -34,7 +34,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newPlanListCommand() *cobra.Command {
+func newPlanListCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "list [OPTIONS]",
 		Short: "List plans",
@@ -45,9 +45,9 @@ func newPlanListCommand() *cobra.Command {
 			var task_table [][]string
 			var quiet bool
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.GetJSONOptions("/api/tasks/planned", map[string]string{}, &tlist)
 
 			sort.Slice(tlist[:], func(i, j int) bool {

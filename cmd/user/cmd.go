@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package user
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewUserCommand() *cobra.Command {
+func NewUserCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "user [command] [OPTIONS]",
@@ -32,11 +33,11 @@ func NewUserCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newUserCreateCommand(),
-		newUserSetCommand(),
-		newUserListCommand(),
-		newUserRemoveCommand(),
-		newUserShowCommand(),
+		newUserCreateCommand(config),
+		newUserSetCommand(config),
+		newUserListCommand(config),
+		newUserRemoveCommand(config),
+		newUserShowCommand(config),
 	)
 
 	return cmd

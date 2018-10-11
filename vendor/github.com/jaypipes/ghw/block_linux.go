@@ -63,6 +63,21 @@ func DiskSizeBytes(disk string) uint64 {
 	return uint64(i) * LINUX_SECTOR_SIZE
 }
 
+func DiskNUMANodeID(disk string) int {
+	link, err := os.Readlink(filepath.Join(pathSysBlock(), disk))
+	if err != nil {
+		return -1
+	}
+	for partial := link; strings.HasPrefix(partial, "../devices/"); partial = filepath.Base(partial) {
+		if nodeContents, err := ioutil.ReadFile(filepath.Join(pathSysBlock(), partial, "numa_node")); err != nil {
+			if nodeInt, err := strconv.Atoi(string(nodeContents)); err != nil {
+				return nodeInt
+			}
+		}
+	}
+	return -1
+}
+
 func DiskVendor(disk string) string {
 	// In Linux, the vendor for a disk device is found in the
 	// /sys/block/$DEVICE/device/vendor file in sysfs
@@ -74,53 +89,83 @@ func DiskVendor(disk string) string {
 	return strings.TrimSpace(string(contents))
 }
 
-func DiskSerialNumber(disk string) string {
-	// Finding the serial number of a disk without root privileges in Linux is
-	// a little tricky. The /dev/disk/by-id directory contains a bunch of
-	// symbolic links to disk devices and partitions. The serial number is
-	// embedded as part of the symbolic link. For example, on my system, the
-	// primary SCSI disk (/dev/sda) is represented as a symbolic link named
-	// /dev/disk/by-id/scsi-3600508e000000000f8253aac9a1abd0c. The serial
-	// number is 3600508e000000000f8253aac9a1abd0c.
-	//
-	// Some SATA drives (or rather, disk drive vendors) use inconsistent ways
-	// of putting the serial numbers of the disks in this symbolic link name.
-	// For example, here are two SATA drive identifiers (examples come from
-	// @antylama on GH Issue #19):
-	//
-	// /dev/disk/by-id/ata-AXIOMTEK_Corp.-FSA032G300MW5T-H_BCA11704240020001
-	//
-	// in the above identifier, "BCA11704240020001" is the drive serial number.
-	// The vendor name along with what appears to be a vendor model name
-	// (FSA032G300MW5T-H) are also included in the symbolic link name.
-	//
-	// /dev/disk/by-id/ata-WDC_WD10JFCX-68N6GN0_WD-WX31A76R3KFS
-	//
-	// in the above identifier, the serial number of the disk is actually
-	// WD-WX31A76R3KFS, not WX31A76R3KFS. Go figure...
-	path := filepath.Join(pathDevDiskById())
-	links, err := ioutil.ReadDir(path)
+func udevInfo(disk string) (map[string]string, error) {
+	// Get device major:minor numbers
+	devNo, err := ioutil.ReadFile(filepath.Join(pathSysBlock(), disk, "dev"))
+	if err != nil {
+		return nil, err
+	}
+
+	// Look up block device in udev runtime database
+	udevId := "b" + strings.TrimSpace(string(devNo))
+	udevBytes, err := ioutil.ReadFile(filepath.Join(pathRunUdevData(), udevId))
+	if err != nil {
+		return nil, err
+	}
+
+	udevInfo := make(map[string]string)
+	for _, udevLine := range strings.Split(string(udevBytes), "\n") {
+		if strings.HasPrefix(udevLine, "E:") {
+			if s := strings.SplitN(udevLine[2:], "=", 2); len(s) == 2 {
+				udevInfo[s[0]] = s[1]
+			}
+		}
+	}
+	return udevInfo, nil
+}
+
+func DiskModel(disk string) string {
+	info, err := udevInfo(disk)
 	if err != nil {
 		return UNKNOWN
 	}
-	for _, link := range links {
-		lname := link.Name()
-		lpath := filepath.Join(path, lname)
-		dest, err := os.Readlink(lpath)
-		if err != nil {
-			continue
-		}
-		dest = filepath.Base(dest)
-		if dest != disk {
-			continue
-		}
-		pos := strings.LastIndex(lname, "_")
-		if pos < 0 {
-			pos = strings.Index(lname, "-")
-		}
-		if pos >= 0 {
-			return lname[pos+1:]
-		}
+
+	if model, ok := info["ID_MODEL"]; ok {
+		return model
+	}
+	return UNKNOWN
+}
+
+func DiskSerialNumber(disk string) string {
+	info, err := udevInfo(disk)
+	if err != nil {
+		return UNKNOWN
+	}
+
+	// There are two serial number keys, ID_SERIAL and ID_SERIAL_SHORT
+	// The non-_SHORT version often duplicates vendor information collected elsewhere, so use _SHORT.
+	if serial, ok := info["ID_SERIAL_SHORT"]; ok {
+		return serial
+	}
+	return UNKNOWN
+}
+
+func DiskBusPath(disk string) string {
+	info, err := udevInfo(disk)
+	if err != nil {
+		return UNKNOWN
+	}
+
+	// There are two path keys, ID_PATH and ID_PATH_TAG.
+	// The difference seems to be _TAG has funky characters converted to underscores.
+	if path, ok := info["ID_PATH"]; ok {
+		return path
+	}
+	return UNKNOWN
+}
+
+func DiskWWN(disk string) string {
+	info, err := udevInfo(disk)
+	if err != nil {
+		return UNKNOWN
+	}
+
+	// Trying ID_WWN_WITH_EXTENSION and falling back to ID_WWN is the same logic lsblk uses
+	if wwn, ok := info["ID_WWN_WITH_EXTENSION"]; ok {
+		return wwn
+	}
+	if wwn, ok := info["ID_WWN"]; ok {
+		return wwn
 	}
 	return UNKNOWN
 }
@@ -178,16 +223,24 @@ func Disks() []*Disk {
 
 		size := DiskSizeBytes(dname)
 		pbs := DiskPhysicalBlockSizeBytes(dname)
+		busPath := DiskBusPath(dname)
+		node := DiskNUMANodeID(dname)
 		vendor := DiskVendor(dname)
+		model := DiskModel(dname)
 		serialNo := DiskSerialNumber(dname)
+		wwn := DiskWWN(dname)
 
 		d := &Disk{
 			Name:                   dname,
 			SizeBytes:              size,
 			PhysicalBlockSizeBytes: pbs,
 			BusType:                busType,
+			BusPath:                busPath,
+			NUMANodeID:             node,
 			Vendor:                 vendor,
+			Model:                  model,
 			SerialNumber:           serialNo,
+			WWN:                    wwn,
 		}
 
 		parts := DiskPartitions(dname)

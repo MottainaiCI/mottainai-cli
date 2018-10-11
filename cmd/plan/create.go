@@ -35,7 +35,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newPlanCreateCommand() *cobra.Command {
+func newPlanCreateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "create [OPTIONS]",
 		Short: "Create a new planning",
@@ -46,14 +46,14 @@ func newPlanCreateCommand() *cobra.Command {
 			var fetcher *client.Fetcher
 			var jsonfile string
 			var value string
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 			var flagsName []string = []string{
 				"script", "storage", "source", "directory", "task", "image",
 				"namespace", "storage_path", "artefact_path", "tag_namespace",
 				"prune", "queue", "cache_image", "planned",
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			var p = &task.Plan{}
 			dat := make(map[string]interface{})
 

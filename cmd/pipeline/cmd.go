@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package pipeline
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewPipelineCommand() *cobra.Command {
+func NewPipelineCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "pipeline [command] [OPTIONS]",
@@ -32,10 +33,10 @@ func NewPipelineCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newPipelineCreateCommand(),
-		newPipelineListCommand(),
-		newPipelineRemoveCommand(),
-		newPipelineShowCommand(),
+		newPipelineCreateCommand(config),
+		newPipelineListCommand(config),
+		newPipelineRemoveCommand(config),
+		newPipelineShowCommand(config),
 	)
 
 	return cmd

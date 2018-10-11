@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package profile
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewProfileCommand() *cobra.Command {
+func NewProfileCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "profile [command] [OPTIONS]",
@@ -32,9 +33,9 @@ func NewProfileCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newProfileListCommand(),
-		newProfileCreateCommand(),
-		newProfileRemoveCommand(),
+		newProfileListCommand(config),
+		newProfileCreateCommand(config),
+		newProfileRemoveCommand(config),
 	)
 
 	return cmd

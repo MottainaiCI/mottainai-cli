@@ -30,16 +30,16 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskStartCommand() *cobra.Command {
+func newTaskStartCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "start <taskid> [OPTIONS]",
 		Short: "Start a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			id := args[0]
 			if len(id) == 0 {

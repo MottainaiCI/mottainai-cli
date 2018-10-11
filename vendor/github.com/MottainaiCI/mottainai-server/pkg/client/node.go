@@ -22,13 +22,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package client
 
-import (
-	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
-)
-
 func (f *Fetcher) RegisterNode(ID, hostname string) ([]byte, error) {
-	return f.PostOptions("/api/nodes/register", map[string]string{
-		"key":      setting.Configuration.AgentKey,
+	url := f.Config.GetWeb().BuildURI("/api/nodes/register")
+	return f.PostOptions(url, map[string]string{
+		"key":      f.Config.GetAgent().AgentKey,
 		"nodeid":   ID,
 		"hostname": hostname,
 	})

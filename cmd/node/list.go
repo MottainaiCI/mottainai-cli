@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNodeListCommand() *cobra.Command {
+func newNodeListCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "list [OPTIONS]",
 		Short: "List nodes",
@@ -40,9 +40,9 @@ func newNodeListCommand() *cobra.Command {
 			var n []nodes.Node
 			var node_table [][]string
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.GetJSONOptions("/api/nodes", map[string]string{}, &n)
 
 			for _, i := range n {

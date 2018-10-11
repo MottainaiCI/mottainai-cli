@@ -31,7 +31,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newStorageRemoveCommand() *cobra.Command {
+func newStorageRemoveCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "remove <storageid> <absolute_path> [OPTIONS]",
 		Short: "Remove a given path from a storage",
@@ -39,9 +39,9 @@ func newStorageRemoveCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			st := args[0]
 			path := args[1]

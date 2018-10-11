@@ -29,14 +29,14 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNamespaceUploadCommand() *cobra.Command {
+func newNamespaceUploadCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "upload <namespace> <file> <storage-path> [OPTIONS]",
 		Short: "Upload file to a namespace",
 		Args:  cobra.RangeArgs(3, 3),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			storage := args[0]
 			file := args[1]
@@ -45,7 +45,7 @@ func newNamespaceUploadCommand() *cobra.Command {
 				log.Fatalln("You need to define a storage id, a file and a target storage path.")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.UploadNamespaceFile(storage, file, path)
 		},
 	}

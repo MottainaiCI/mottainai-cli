@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package webhook
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewWebHookCommand() *cobra.Command {
+func NewWebHookCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "webhook [command] [OPTIONS]",
@@ -32,9 +33,9 @@ func NewWebHookCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newWebHookCreateCommand(),
-		newWebHookListCommand(),
-		newWebHookRemoveCommand(),
+		newWebHookCreateCommand(config),
+		newWebHookListCommand(config),
+		newWebHookRemoveCommand(config),
 	)
 
 	return cmd

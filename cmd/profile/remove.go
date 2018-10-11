@@ -30,7 +30,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newProfileRemoveCommand() *cobra.Command {
+func newProfileRemoveCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "remove <profile-name> [OPTIONS]",
 		Short: "Remove a profile",
@@ -40,7 +40,7 @@ func newProfileRemoveCommand() *cobra.Command {
 			var name, f string
 			var conf common.ProfileConf
 			var p *common.Profile
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
 			name = args[0]
 

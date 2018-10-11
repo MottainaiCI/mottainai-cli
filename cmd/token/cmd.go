@@ -21,10 +21,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package token
 
 import (
+	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/spf13/cobra"
 )
 
-func NewTokenCommand() *cobra.Command {
+func NewTokenCommand(config *setting.Config) *cobra.Command {
 
 	var cmd = &cobra.Command{
 		Use:   "token [command] [OPTIONS]",
@@ -32,9 +33,9 @@ func NewTokenCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newTokenCreateCommand(),
-		newTokenListCommand(),
-		newTokenRemoveCommand(),
+		newTokenCreateCommand(config),
+		newTokenListCommand(config),
+		newTokenRemoveCommand(config),
 	)
 
 	return cmd

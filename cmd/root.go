@@ -58,67 +58,30 @@ $> mottainai-cli -m http://127.0.0.1:8080 namespace list
 `
 )
 
-var rootCmd = &cobra.Command{
-	Short:        cliName,
-	Version:      setting.MOTTAINAI_VERSION,
-	Example:      cliExamples,
-	Args:         cobra.OnlyValidArgs,
-	SilenceUsage: true,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Help()
-			os.Exit(0)
-		}
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-	},
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		var err error
-		var v *viper.Viper = setting.Configuration.Viper
+func initConfig(config *setting.Config) {
+	// Set env variable
+	config.Viper.SetEnvPrefix(common.MCLI_ENV_PREFIX)
+	config.Viper.BindEnv("config")
+	config.Viper.SetDefault("master", "http://localhost:8080")
+	config.Viper.SetDefault("profile", "")
+	config.Viper.SetDefault("config", "")
+	config.Viper.SetDefault("etcd-config", false)
 
-		// Parse configuration file
-		err = setting.Configuration.Unmarshal()
-		// TODO: Add loglevel in debug that said no config file processed.
-		// if err != nil {
-		//	fmt.Println(err)
-		//}
+	config.Viper.AutomaticEnv()
 
-		// Load profile data and override master if not present.
-		if v.Get("profiles") != nil && !cmd.Flag("master").Changed {
+	// Set config file name (without extension)
+	config.Viper.SetConfigName(common.MCLI_CONFIG_NAME)
 
-			// PRE: profiles contains a map
-			//      map[
-			//        <NAME_PROFILE1>:<PROFILE INTERFACE>
-			//        <NAME_PROFILE2>:<PROFILE INTERFACE>
-			//     ]
+	// Set Config paths list
+	config.Viper.AddConfigPath(common.MCLI_LOCAL_PATH)
+	config.Viper.AddConfigPath(fmt.Sprintf("$HOME/%s", common.MCLI_HOME_PATH))
 
-			var conf common.ProfileConf
-			var profile *common.Profile
-			if err = v.Unmarshal(&conf); err != nil {
-				fmt.Println("Ignore config: ", err)
-			} else {
-				if v.GetString("profile") != "" {
-					profile, err = conf.GetProfile(v.GetString("profile"))
-
-					if profile != nil {
-						v.Set("master", profile.GetMaster())
-						if profile.GetApiKey() != "" && !cmd.Flag("apikey").Changed {
-							v.Set("apikey", profile.GetApiKey())
-						}
-					} else {
-						fmt.Printf("No profile with name %s. I use default value.\n", v.GetString("profile"))
-					}
-				}
-			}
-
-		}
-	},
+	config.Viper.SetTypeByDefaultValue(true)
 }
 
-func init() {
-
+func initCommand(rootCmd *cobra.Command, config *setting.Config) {
 	var pflags = rootCmd.PersistentFlags()
-	v := setting.Configuration.Viper
+	v := config.Viper
 
 	pflags.StringP("master", "m", "http://localhost:8080", "MottainaiCI webUI URL")
 	pflags.StringP("apikey", "k", "fb4h3bhgv4421355", "Mottainai API key")
@@ -130,22 +93,85 @@ func init() {
 	v.BindPFlag("profile", rootCmd.PersistentFlags().Lookup("profile"))
 
 	rootCmd.AddCommand(
-		task.NewTaskCommand(),
-		node.NewNodeCommand(),
-		token.NewTokenCommand(),
-		namespace.NewNamespaceCommand(),
-		plan.NewPlanCommand(),
-		profile.NewProfileCommand(),
-		user.NewUserCommand(),
-		storage.NewStorageCommand(),
-		simulate.NewSimulateCommand(),
-		pipeline.NewPipelineCommand(),
-		settingcmd.NewSettingCommand(),
-		webhookcmd.NewWebHookCommand(),
+		task.NewTaskCommand(config),
+		node.NewNodeCommand(config),
+		token.NewTokenCommand(config),
+		namespace.NewNamespaceCommand(config),
+		plan.NewPlanCommand(config),
+		profile.NewProfileCommand(config),
+		user.NewUserCommand(config),
+		storage.NewStorageCommand(config),
+		simulate.NewSimulateCommand(config),
+		pipeline.NewPipelineCommand(config),
+		settingcmd.NewSettingCommand(config),
+		webhookcmd.NewWebHookCommand(config),
 	)
 }
 
 func Execute() {
+	// Create Main Instance Config object
+	var config *setting.Config = setting.NewConfig(nil)
+
+	initConfig(config)
+
+	var rootCmd = &cobra.Command{
+		Short:        cliName,
+		Version:      setting.MOTTAINAI_VERSION,
+		Example:      cliExamples,
+		Args:         cobra.OnlyValidArgs,
+		SilenceUsage: true,
+		PreRun: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				cmd.Help()
+				os.Exit(0)
+			}
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+		},
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			var err error
+			var v *viper.Viper = config.Viper
+
+			// Parse configuration file
+			err = config.Unmarshal()
+			// TODO: Add loglevel in debug that said no config file processed.
+			// if err != nil {
+			//	fmt.Println(err)
+			//}
+
+			// Load profile data and override master if not present.
+			if v.Get("profiles") != nil && !cmd.Flag("master").Changed {
+
+				// PRE: profiles contains a map
+				//      map[
+				//        <NAME_PROFILE1>:<PROFILE INTERFACE>
+				//        <NAME_PROFILE2>:<PROFILE INTERFACE>
+				//     ]
+
+				var conf common.ProfileConf
+				var profile *common.Profile
+				if err = v.Unmarshal(&conf); err != nil {
+					fmt.Println("Ignore config: ", err)
+				} else {
+					if v.GetString("profile") != "" {
+						profile, err = conf.GetProfile(v.GetString("profile"))
+
+						if profile != nil {
+							v.Set("master", profile.GetMaster())
+							if profile.GetApiKey() != "" && !cmd.Flag("apikey").Changed {
+								v.Set("apikey", profile.GetApiKey())
+							}
+						} else {
+							fmt.Printf("No profile with name %s. I use default value.\n", v.GetString("profile"))
+						}
+					}
+				}
+
+			}
+		},
+	}
+
+	initCommand(rootCmd, config)
 
 	// Start command execution
 	if err := rootCmd.Execute(); err != nil {

@@ -30,7 +30,7 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTokenCreateCommand() *cobra.Command {
+func newTokenCreateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "create [OPTIONS]",
 		Short: "Create a new token",
@@ -39,9 +39,9 @@ func newTokenCreateCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			res, err := fetcher.GetOptions("/api/token/create", map[string]string{})
 			tools.CheckError(err)

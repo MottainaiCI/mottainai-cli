@@ -30,17 +30,17 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskExecuteCommand() *cobra.Command {
+func newTaskExecuteCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "execute <taskid> [OPTIONS]",
 		Short: "execute task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
-			setting.Configuration.ApiKey = v.GetString("apikey")
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			config.GetAgent().ApiKey = v.GetString("apikey")
 			fetcher.ActiveReports = true
 			id := args[0]
 			if len(id) == 0 {
@@ -55,9 +55,8 @@ func newTaskExecuteCommand() *cobra.Command {
 
 			var fn func(string) (int, error)
 
-			fn = citasks.DefaultTaskHandler().Handler(t.TaskName)
-			setting.Configuration.GenDefault()
-			setting.Configuration.AppURL = v.GetString("master")
+			config.GetWeb().AppURL = v.GetString("master")
+			fn = citasks.DefaultTaskHandler(config).Handler(t.TaskName)
 			fn(id)
 		},
 	}

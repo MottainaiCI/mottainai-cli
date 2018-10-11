@@ -27,14 +27,14 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskMonitorCommand() *cobra.Command {
+func newTaskMonitorCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "monitor id1 id2 id3 ...",
 		Short: "Monitor tasks and propagate exit status",
 		Run: func(cmd *cobra.Command, args []string) {
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 
-			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			var tasks = make(map[string]bool)
 			for _, id := range args {

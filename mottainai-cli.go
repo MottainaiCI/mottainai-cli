@@ -19,36 +19,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"fmt"
-
 	cli "github.com/MottainaiCI/mottainai-cli/cmd"
-	common "github.com/MottainaiCI/mottainai-cli/common"
-	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 )
 
 func main() {
-
-	v := setting.Configuration.Viper
-	v.SetDefault("master", "http://localhost:8080")
-	v.SetDefault("profile", "")
-	// Temporary for config print
-	v.SetDefault("config", "")
-
-	// Initialize Default Viper Configuration
-	setting.GenDefault(v)
-
-	// Define env variable
-	v.SetEnvPrefix(common.MCLI_ENV_PREFIX)
-	v.AutomaticEnv()
-
-	// Set Config paths list
-	v.AddConfigPath(common.MCLI_LOCAL_PATH)
-	v.AddConfigPath(fmt.Sprintf("$HOME/%s", common.MCLI_HOME_PATH))
-
-	// Set config file name (without extension)
-	v.SetConfigName(common.MCLI_CONFIG_NAME)
-
-	v.SetTypeByDefaultValue(true)
-
 	cli.Execute()
 }

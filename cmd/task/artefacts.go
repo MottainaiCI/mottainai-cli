@@ -30,14 +30,14 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newTaskArtefactsCommand() *cobra.Command {
+func newTaskArtefactsCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "artefacts <taskid> [OPTIONS]",
 		Short: "Show artefacts of a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var fetcher *client.Fetcher
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 			var tlist []string
 
 			id := args[0]
@@ -46,7 +46,7 @@ func newTaskArtefactsCommand() *cobra.Command {
 			}
 
 			fmt.Println("Artefacts for:", id)
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.GetJSONOptions("/api/tasks/"+id+"/artefacts", map[string]string{}, &tlist)
 
 			for _, i := range tlist {

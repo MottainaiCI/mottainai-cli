@@ -29,15 +29,15 @@ import (
 	viper "github.com/spf13/viper"
 )
 
-func newNamespaceDownloadCommand() *cobra.Command {
+func newNamespaceDownloadCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "download <namespace> <target> [OPTIONS]",
 		Short: "Download namespace artefacts",
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
-			var v *viper.Viper = setting.Configuration.Viper
+			var v *viper.Viper = config.Viper
 			var fetcher *client.Fetcher
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"))
+			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.ActiveReports = true
 
 			ns := args[0]
