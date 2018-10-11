@@ -131,8 +131,8 @@
     "service/sqs/sqsiface",
     "service/sts"
   ]
-  revision = "eee06b117565431c7f0002553e4e40f128858d17"
-  version = "v1.15.51"
+  revision = "46fe04784968cd7b54e859fcce45753456f736ac"
+  version = "v1.15.52"
 
 [[projects]]
   branch = "master"
@@ -189,7 +189,7 @@
     "pkg/term",
     "pkg/term/windows"
   ]
-  revision = "82a4797499a6a72ffa71ef746652999982e67bd1"
+  revision = "1f48759ad107152699e6138d60922587ea4ba35b"
 
 [[projects]]
   name = "github.com/docker/go-connections"
@@ -412,10 +412,10 @@
   version = "v1.1.2"
 
 [[projects]]
-  branch = "master"
   name = "github.com/mudler/anagent"
   packages = ["."]
   revision = "626d9ac35e3e4b5af2735542ac49a511784b4bc8"
+  version = "v0.1"
 
 [[projects]]
   branch = "master"
@@ -613,7 +613,7 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "146acd28ed5894421fb5aac80ca93bc1b1f46f87"
+  revision = "49bb7cea24b1df9410e1712aa6433dae904ff66a"
 
 [[projects]]
   branch = "master"
@@ -623,7 +623,7 @@
     "unix",
     "windows"
   ]
-  revision = "4497e2df6f9e69048a54498c7affbbec3294ad47"
+  revision = "fa43e7bc11baaae89f3f902b2b4d832b68234844"
 
 [[projects]]
   name = "golang.org/x/text"
