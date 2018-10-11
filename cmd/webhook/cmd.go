@@ -36,6 +36,8 @@ func NewWebHookCommand(config *setting.Config) *cobra.Command {
 		newWebHookCreateCommand(config),
 		newWebHookListCommand(config),
 		newWebHookRemoveCommand(config),
+		newWebHookDeleteCommand(config),
+		newWebHookUpdateCommand(config),
 	)
 
 	return cmd

@@ -23,6 +23,7 @@ package webhook
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -51,6 +52,8 @@ func newWebHookListCommand(config *setting.Config) *cobra.Command {
 
 			quiet, err = cmd.Flags().GetBool("quiet")
 			tools.CheckError(err)
+			all, err := cmd.Flags().GetBool("all")
+			tools.CheckError(err)
 
 			if quiet {
 				for _, i := range tlist {
@@ -60,13 +63,21 @@ func newWebHookListCommand(config *setting.Config) *cobra.Command {
 			}
 
 			for _, i := range tlist {
-				task_table = append(task_table, []string{i.ID, i.Key, i.URL, i.Type, i.OwnerId})
+				if !all {
+					task_table = append(task_table, []string{i.ID, i.Key, i.URL, i.Type, i.OwnerId, strconv.FormatBool(i.HasPipeline()), strconv.FormatBool(i.HasTask())})
+				} else {
+					t, _ := i.ReadTask()
+					p, _ := i.ReadPipeline()
+					tstr := fmt.Sprintf("%#v", t)
+					pstr := fmt.Sprintf("%#v", p)
+					task_table = append(task_table, []string{i.ID, i.Key, i.URL, i.Type, i.OwnerId, pstr, tstr})
+				}
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 			table.SetCenterSeparator("|")
-			table.SetHeader([]string{"ID", "Key", "URL", "Type", "Owner"})
+			table.SetHeader([]string{"ID", "Key", "URL", "Type", "Owner", "Pipeline", "Task"})
 
 			for _, v := range task_table {
 				table.Append(v)
@@ -78,6 +89,7 @@ func newWebHookListCommand(config *setting.Config) *cobra.Command {
 
 	var flags = cmd.Flags()
 	flags.BoolP("quiet", "q", false, "Quiet Output")
+	flags.BoolP("all", "a", false, "Full list")
 
 	return cmd
 }
