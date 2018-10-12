@@ -31,7 +31,7 @@
     "pkg/utils",
     "pkg/webhook"
   ]
-  revision = "20d5b34fbae9dbbf48739141c0650a0245e2430e"
+  revision = "19745748358b7ee88fb35b7adf8423620dd72d27"
 
 [[projects]]
   branch = "master"
@@ -43,7 +43,7 @@
   branch = "master"
   name = "github.com/MottainaiCI/vagrantutil"
   packages = ["."]
-  revision = "975f72f00223837aa3a744fadae386f8bf40df32"
+  revision = "cef76f33b8d1939ef4d4e8f809d50cc27e0f02e9"
 
 [[projects]]
   branch = "master"
@@ -131,8 +131,8 @@
     "service/sqs/sqsiface",
     "service/sts"
   ]
-  revision = "46fe04784968cd7b54e859fcce45753456f736ac"
-  version = "v1.15.52"
+  revision = "4b4fb865e4e4a972645dba0b9677e623dd83a8a8"
+  version = "v1.15.53"
 
 [[projects]]
   branch = "master"
@@ -189,7 +189,7 @@
     "pkg/term",
     "pkg/term/windows"
   ]
-  revision = "1f48759ad107152699e6138d60922587ea4ba35b"
+  revision = "10ebe6381e1f31faf6b66a53babe5bc4be41457a"
 
 [[projects]]
   name = "github.com/docker/go-connections"
@@ -207,7 +207,7 @@
   branch = "master"
   name = "github.com/docker/libnetwork"
   packages = ["ipamutils"]
-  revision = "87fe5db676712bf4bd772f4d9913822e8c704cb9"
+  revision = "d7b61745d16675c9f548b19f06fda80d422a74f0"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -320,7 +320,7 @@
   branch = "master"
   name = "github.com/jaypipes/ghw"
   packages = ["."]
-  revision = "927a1694ec14a1417a2e524cf4f7078a9ddae844"
+  revision = "4bfe748e0945cc976f0dff9ef11b3355b0efc390"
 
 [[projects]]
   branch = "master"
@@ -607,7 +607,7 @@
     "ssh/knownhosts",
     "ssh/terminal"
   ]
-  revision = "7c1a557ab941a71c619514f229f0b27ccb0c27cf"
+  revision = "a92615f3c49003920a58dedcf32cf55022cefb8d"
 
 [[projects]]
   branch = "master"
