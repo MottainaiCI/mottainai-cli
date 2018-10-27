@@ -31,7 +31,7 @@
     "pkg/utils",
     "pkg/webhook"
   ]
-  revision = "cdc91d22a9934fc4bc43e1459c768a1b7751f750"
+  revision = "ba5978bd2a6a12612099854815765653cef61682"
 
 [[projects]]
   branch = "master"
@@ -43,7 +43,7 @@
   branch = "master"
   name = "github.com/MottainaiCI/vagrantutil"
   packages = ["."]
-  revision = "cef76f33b8d1939ef4d4e8f809d50cc27e0f02e9"
+  revision = "c8f45988a24e05de76907af2e9672af54dd3fba0"
 
 [[projects]]
   branch = "master"
