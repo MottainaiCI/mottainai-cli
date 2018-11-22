@@ -49,7 +49,7 @@ func newNamespaceRemoveCommand(config *setting.Config) *cobra.Command {
 				log.Fatalln("You need to define a namespace and a path to delete")
 			}
 
-			res, err := fetcher.GetOptions("/api/namespace/"+ns+"/remove/"+path, map[string]string{})
+			res, err := fetcher.GenericForm("/api/namespace/remove/", map[string]interface{}{"name": ns, "path": path})
 			tools.CheckError(err)
 			fmt.Println(string(res))
 		},
