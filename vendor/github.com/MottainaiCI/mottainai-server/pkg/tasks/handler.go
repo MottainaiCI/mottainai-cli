@@ -38,7 +38,14 @@ type TaskHandler struct {
 	Config *setting.Config
 	Err    error
 }
+type Handler func(string) (int, error)
 
+func (h *TaskHandler) AddHandler(s string, handler Handler) {
+	h.Tasks[s] = handler
+}
+func (h *TaskHandler) RemoveHandler(s string) {
+	delete(h.Tasks, s)
+}
 func (h *TaskHandler) Exists(s string) bool {
 	if _, ok := h.Tasks[s]; ok {
 		return true
@@ -46,30 +53,26 @@ func (h *TaskHandler) Exists(s string) bool {
 	return false
 }
 
-func (h *TaskHandler) Handler(s string) func(string) (int, error) {
+func (h *TaskHandler) Handler(s string) Handler {
 	if f, ok := h.Tasks[s]; ok {
-		return f.(func(string) (int, error))
+		return f.(Handler)
 	}
 	panic(errors.New("No task handler found!"))
 }
 
+var singletonTaskHandler *TaskHandler
+
+func SetSingleton(th *TaskHandler) {
+	singletonTaskHandler = th
+}
+
 func DefaultTaskHandler(config *setting.Config) *TaskHandler {
-	return &TaskHandler{Tasks: map[string]interface{}{
-
-		"docker_execute": DockerPlayer(config),
-		"docker":         DockerPlayer(config),
-
-		"libvirt_execute": LibvirtPlayer(config),
-		"libvirt_vagrant": LibvirtPlayer(config),
-
-		"virtualbox_execute": VirtualBoxPlayer(config),
-		"virtualbox_vagrant": VirtualBoxPlayer(config),
-
-		"error": HandleErr(config),
-		//	"success":        HandleSuccess,
-	},
-		Config: config,
+	if singletonTaskHandler != nil {
+		return singletonTaskHandler
 	}
+	th := GenDefaultTaskHandler(config)
+	SetSingleton(th)
+	return th
 }
 
 func HandleArgs(args ...interface{}) (string, int, error) {
