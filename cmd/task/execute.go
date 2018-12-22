@@ -56,7 +56,7 @@ func newTaskExecuteCommand(config *setting.Config) *cobra.Command {
 			var fn func(string) (int, error)
 
 			config.GetWeb().AppURL = v.GetString("master")
-			fn = citasks.DefaultTaskHandler(config).Handler(t.TaskName)
+			fn = citasks.DefaultTaskHandler(config).Handler(t.Type)
 			fn(id)
 		},
 	}

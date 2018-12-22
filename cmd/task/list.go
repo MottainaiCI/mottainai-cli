@@ -69,13 +69,13 @@ func newTaskListCommand(config *setting.Config) *cobra.Command {
 			for _, i := range tlist {
 				t, _ := time.Parse("20060102150405", i.CreatedTime)
 				t2, _ := time.Parse("20060102150405", i.EndTime)
-				task_table = append(task_table, []string{i.ID, i.Status, i.Result, t.String(), t2.String(), i.Source, i.Directory})
+				task_table = append(task_table, []string{i.ID, i.Name, i.Type, i.Status, i.Result, t.String(), t2.String(), i.Source, i.Directory})
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 			table.SetCenterSeparator("|")
-			table.SetHeader([]string{"ID", "Status", "Result", "Created", "End", "Source", "Dir"})
+			table.SetHeader([]string{"ID", "Name", "Type", "Status", "Result", "Created", "End", "Source", "Dir"})
 
 			for _, v := range task_table {
 				table.Append(v)

@@ -78,7 +78,7 @@ func newTaskCreateCommand(config *setting.Config) *cobra.Command {
 
 			var value string
 			var flagsName []string = []string{
-				"script", "storage", "source", "directory", "task", "image",
+				"name", "script", "storage", "source", "directory", "type", "image",
 				"namespace", "storage_path", "artefact_path", "tag_namespace",
 				"prune", "queue", "cache_image",
 			}
@@ -125,7 +125,8 @@ func newTaskCreateCommand(config *setting.Config) *cobra.Command {
 	flags.String("storage", "", "Storage ID")
 	flags.StringP("source", "s", "", "Repository url ( e.g. https://github.com/foo/bar.git )")
 	flags.StringP("directory", "d", "", "Directory inside repository url ( e.g. /test )")
-	flags.StringP("task", "t", "docker_execute", "Task type ( default: docker_execute )")
+	flags.StringP("type", "t", "docker_execute", "Task type ( default: docker_execute )")
+	flags.StringP("name", "", "my_task", "Task Name ( default: empty )")
 	flags.StringP("image", "i", "", "Image used from the task ( e.g. my/docker-image:latest")
 	flags.StringP("namespace", "n", "", "Specify a namespace the task will be started on")
 	flags.StringP("storage_path", "S", "storage", "Specify the storage path in the task")
