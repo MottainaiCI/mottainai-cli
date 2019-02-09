@@ -24,6 +24,7 @@ package agenttasks
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -114,7 +115,12 @@ func (d *TaskExecutor) DownloadArtefacts(artefactdir, storagedir string) error {
 
 func (d *TaskExecutor) UploadArtefacts(folder string) error {
 	err := filepath.Walk(folder, func(path string, f os.FileInfo, err error) error {
-		return d.MottainaiClient.UploadFile(path, folder)
+		e := d.MottainaiClient.UploadFile(path, folder)
+		if e != nil {
+			d.Report(fmt.Sprintf("Error on upload file %s: ", path) + e.Error())
+		}
+
+		return e
 	})
 
 	if err != nil {
@@ -195,6 +201,19 @@ func (d *TaskExecutor) Report(v ...interface{}) {
 }
 
 func (d *TaskExecutor) Setup(docID string) error {
+
+	// Handle Pre-execution task commands
+	for _, k := range d.Config.GetAgent().PreTaskHookExec {
+		d.Report("> Pre-Executing: " + k)
+		args := strings.Split(k, " ")
+		cmdName := args[0]
+		out, stderr, err := utils.Cmd(cmdName, args[1:])
+		if err != nil {
+			d.Report("!! Error: " + err.Error() + ": " + stderr)
+		}
+		d.Report(out)
+	}
+
 	d.Context.DocID = docID
 	fetcher := d.MottainaiClient
 	d.MottainaiClient.SetUploadChunkSize(d.Config.GetAgent().UploadChunkSize)

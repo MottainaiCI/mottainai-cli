@@ -214,8 +214,9 @@ func (l *LxdExecutor) Play(docId string) (int, error) {
 
 	l.Report("Completed phase of artefacts download!")
 
-	containerName = "mottainai-" + task_info.Image + "-" + task_info.ID
+	containerName = l.GetContainerName(&task_info)
 
+	l.Report("Starting container " + containerName)
 	err = l.LaunchContainer(containerName, imageFingerprint, cachedImage)
 	if err != nil {
 		return 1, err
@@ -621,6 +622,7 @@ func (l *LxdExecutor) DoAction2Container(name, action string) error {
 
 	l.CurrentLocalOperation, err = l.LxdClient.UpdateContainerState(name, req, "")
 	if err != nil {
+		l.Report("Error on update container state: " + err.Error())
 		return err
 	}
 
@@ -630,6 +632,7 @@ func (l *LxdExecutor) DoAction2Container(name, action string) error {
 
 	_, err = l.CurrentLocalOperation.AddHandler(progress.UpdateOp)
 	if err != nil {
+		l.Report("Error on add handerl to progress bar: " + err.Error())
 		l.CurrentLocalOperation = nil
 		progress.Done("")
 		return err
@@ -693,6 +696,10 @@ func (l *LxdExecutor) FindImage(image string) (string, lxd.ImageServer, string, 
 			srv = tmp_srv
 			srv_name = remote
 		}
+	}
+
+	if fingerprint == "" {
+		err = fmt.Errorf("No image found with alias or fingerprint %s", image)
 	}
 
 	return fingerprint, srv, srv_name, err
@@ -1080,6 +1087,11 @@ func (l *LxdExecutor) RecursivePullFile(nameContainer string, destPath string, l
 			WriteCloser: f,
 			Tracker: &ioprogress.ProgressTracker{
 				Handler: func(bytesReceived int64, speed int64) {
+
+					l.Report(fmt.Sprintf("%s (%s/s)\n",
+						lxd_shared.GetByteSizeString(bytesReceived, 2),
+						lxd_shared.GetByteSizeString(speed, 2)))
+
 					progress.UpdateProgress(ioprogress.ProgressData{
 						Text: fmt.Sprintf("%s (%s/s)",
 							lxd_shared.GetByteSizeString(bytesReceived, 2),
@@ -1089,11 +1101,12 @@ func (l *LxdExecutor) RecursivePullFile(nameContainer string, destPath string, l
 		}
 
 		_, err = io.Copy(writer, buf)
+		progress.Done("")
 		if err != nil {
-			progress.Done("")
+			l.Report(fmt.Sprintf("Error on pull file %s", target))
 			return err
 		}
-		progress.Done("")
+
 	} else if resp.Type == "symlink" {
 		linkTarget, err := ioutil.ReadAll(buf)
 		if err != nil {
@@ -1242,4 +1255,26 @@ func (l *LxdExecutor) DeleteContainerDirRecursive(containerName, dir string) err
 	}
 
 	return nil
+}
+
+func (l *LxdExecutor) GetContainerName(task *Task) string {
+	var ans string
+
+	if task.Image != "" {
+		image := task.Image
+		if len(task.Image) > 20 {
+			image = task.Image[:19]
+		}
+
+		// To avoid error: Container name isn't a valid hostname
+		// I replace any . with -.
+		// I can't use / because it's used for snapshots.
+		ans = "mottainai-" +
+			strings.Replace(strings.Replace(image, "/", "-", -1), ".", "-", -1) +
+			"-" + task.ID
+	} else {
+		ans = "mottainai-" + task.ID
+	}
+
+	return ans
 }

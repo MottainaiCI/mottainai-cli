@@ -104,7 +104,7 @@ type BrokerConfig struct {
 	// Redis
 	MaxIdle                int  `mapstructure:"max_idle"`
 	MaxActive              int  `mapstructure:"max_active"`
-	IdleTimeout            int  `mapstructure:"max_idle_timeout"`
+	IdleTimeout            int  `mapstructure:"idle_timeout"`
 	Wait                   bool `mapstructure:"wait"`
 	ReadTimeout            int  `mapstructure:"read_timeout"`
 	WriteTimeout           int  `mapstructure:"write_timeout"`
@@ -128,6 +128,9 @@ type AgentConfig struct {
 	UploadRateLimit   int64          `mapstructure:"upload_speed_limit"`
 	Queues            map[string]int `mapstructure:"queues"`
 	UploadChunkSize   int            `mapstructure:"upload_chunk_size"`
+
+	// List of command to execute before execute a task
+	PreTaskHookExec []string `mapstructure:"pre_task_hook_exec"`
 
 	DockerEndpoint    string   `mapstructure:"docker_endpoint"`
 	DockerKeepImg     bool     `mapstructure:"docker_keepimg"`
@@ -262,13 +265,15 @@ func GenDefault(viper *v.Viper) {
 	viper.SetDefault("agent.docker_caps_drop", []string{})
 
 	viper.SetDefault("agent.lxd_endpoint", "")
-	viper.SetDefault("agent.lxd_config_dir", "/srv/mottainai/build/lxc/")
+	viper.SetDefault("agent.lxd_config_dir", "/srv/mottainai/lxc/")
 	viper.SetDefault("agent.lxd_ephemeral_containers", true)
 	viper.SetDefault("agent.lxd_profiles", []string{})
 	viper.SetDefault("agent.lxd_cache_registry", map[string]int{})
 
 	viper.SetDefault("agent.health_check_clean_path", []string{})
 	viper.SetDefault("agent.health_check_exec", []string{})
+
+	viper.SetDefault("agent.pre_task_hook_exec", []string{})
 
 	viper.SetDefault("general.tls_cert", "")
 	viper.SetDefault("general.tls_key", "")
@@ -516,6 +521,8 @@ agent:
   health_check_exec: %s
   health_check_clean_path: %s
 
+  pre_task_hook_exec: %s
+
 `, c.SecretKey, c.BuildPath,
 		c.AgentConcurrency, c.AgentKey, c.ApiKey,
 		c.PrivateQueue, c.StandAlone, c.DownloadRateLimit,
@@ -525,7 +532,8 @@ agent:
 		c.DockerEndpointDiD, c.DockerCaps, c.DockerCapsDrop,
 		c.LxdEndpoint, c.LxdConfigDir, c.LxdProfiles, c.LxdEphemeralContainers,
 		c.LxdCacheRegistry, c.CacheRegistryCredentials,
-		c.HealthCheckExec, c.HealthCheckCleanPath)
+		c.HealthCheckExec, c.HealthCheckCleanPath,
+		c.PreTaskHookExec)
 
 	return ans
 }
