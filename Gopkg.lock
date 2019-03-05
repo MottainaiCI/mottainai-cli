@@ -38,7 +38,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ddde694eaaf34552eb74dd1570bc64f24bff1eb0eea8fdde2723d48d75a5fde0"
+  digest = "1:1bcdd474bff3b222cb9e411670d6bc8a2c6c7c072f5a9891ef647b26d1f0aa01"
   name = "github.com/MottainaiCI/mottainai-server"
   packages = [
     "pkg/client",
@@ -53,7 +53,7 @@
     "pkg/webhook",
   ]
   pruneopts = "UT"
-  revision = "05c276b6aa14e1862818c4c4c3fc83175fd47ea5"
+  revision = "217d60ccb044c0246acbf5fc89f08d1369da2f10"
 
 [[projects]]
   branch = "master"
