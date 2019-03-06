@@ -53,7 +53,7 @@
     "pkg/webhook",
   ]
   pruneopts = "UT"
-  revision = "217d60ccb044c0246acbf5fc89f08d1369da2f10"
+  revision = "ca6958e29d26f800e2ee0f0a7faa31f95f68c0b4"
 
 [[projects]]
   branch = "master"
