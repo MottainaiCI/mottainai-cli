@@ -21,11 +21,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package node
 
 import (
+	"log"
 	"os"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
@@ -39,11 +41,19 @@ func newNodeListCommand(config *setting.Config) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var n []nodes.Node
 			var node_table [][]string
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			fetcher.GetJSONOptions("/api/nodes", map[string]string{}, &n)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+
+			req := client.Request{
+				Route:  v1.Schema.GetNodeRoute("show_all"),
+				Target: &n,
+			}
+
+			err := fetcher.Handle(req)
+			if err != nil {
+				log.Fatalln("error:", err)
+			}
 
 			for _, i := range n {
 				node_table = append(node_table, []string{i.ID, i.Hostname, i.User, i.Pass, i.Key, i.NodeID})

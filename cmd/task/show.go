@@ -28,6 +28,7 @@ import (
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
@@ -38,18 +39,28 @@ func newTaskShowCommand(config *setting.Config) *cobra.Command {
 		Short: "Show a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")
 			}
-
 			var t citasks.Task
-			fetcher.GetJSONOptions("/api/tasks/"+id, map[string]string{}, &t)
+
+			req := client.Request{
+				Route: v1.Schema.GetTaskRoute("as_json"),
+				Interpolations: map[string]string{
+					":id": id,
+				},
+				Target: &t,
+			}
+
+			err := fetcher.Handle(req)
+			if err != nil {
+				panic(err)
+			}
 			b, err := json.MarshalIndent(t, "", "  ")
 			if err != nil {
 				fmt.Println("error:", err)

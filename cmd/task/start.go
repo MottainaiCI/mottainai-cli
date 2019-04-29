@@ -21,9 +21,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package task
 
 import (
-	"fmt"
 	"log"
 
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
@@ -36,20 +36,17 @@ func newTaskStartCommand(config *setting.Config) *cobra.Command {
 		Short: "Start a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")
 			}
-			res, err := fetcher.GetOptions("/api/tasks/start/"+id, map[string]string{})
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println(string(res))
+			res, err := fetcher.StartTask(id)
+			tools.CheckError(err)
+			tools.PrintResponse(res)
 		},
 	}
 

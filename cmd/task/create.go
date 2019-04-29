@@ -42,11 +42,10 @@ func newTaskCreateCommand(config *setting.Config) *cobra.Command {
 		Args:  cobra.OnlyValidArgs,
 		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			to, _ := cmd.Flags().GetString("to")
 			dat := make(map[string]interface{})
 			t := &task.Task{}
@@ -94,11 +93,14 @@ func newTaskCreateCommand(config *setting.Config) *cobra.Command {
 			if len(to) > 0 {
 				created = GenerateTasks(fetcher, dat, to)
 			} else {
-				res, err := fetcher.GenericForm("/api/tasks", dat)
-				if err != nil {
-					panic(err)
+				res, err := fetcher.CreateTask(dat)
+				tools.CheckError(err)
+
+				tid := res.ID
+				if tid == "" {
+					tools.PrintResponse(res)
+					panic("Failed creating task")
 				}
-				tid := string(res)
 				created[tid] = false
 
 				fmt.Println("-------------------------")
@@ -106,8 +108,8 @@ func newTaskCreateCommand(config *setting.Config) *cobra.Command {
 				fmt.Println("-------------------------")
 				fmt.Println("Live log: ", tools.BuildCmdArgs(cmd, "task attach "+tid))
 				fmt.Println("Information: ", tools.BuildCmdArgs(cmd, "task show "+tid))
-				fmt.Println("URL:", " "+fetcher.BaseURL+"/tasks/display/"+tid)
-				fmt.Println("Build Log:", " "+fetcher.BaseURL+"/artefact/"+tid+"/build_"+tid+".log")
+				fmt.Println("URL:", " "+fetcher.GetBaseURL()+"/tasks/display/"+tid)
+				fmt.Println("Build Log:", " "+fetcher.GetBaseURL()+"/artefact/"+tid+"/build_"+tid+".log")
 				fmt.Println("-------------------------")
 			}
 			if monitor, err := cmd.Flags().GetBool("monitor"); err == nil && monitor {

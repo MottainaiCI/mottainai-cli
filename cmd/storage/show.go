@@ -25,6 +25,7 @@ import (
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
@@ -36,7 +37,6 @@ func newStorageShowCommand(config *setting.Config) *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var tlist []string
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
 			storage := args[0]
@@ -44,8 +44,21 @@ func newStorageShowCommand(config *setting.Config) *cobra.Command {
 				log.Fatalln("You need to define a storage id")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			fetcher.GetJSONOptions("/api/storage/"+storage+"/list", map[string]string{}, &tlist)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+
+			req := client.Request{
+				Route:  v1.Schema.GetStorageRoute("show_artefacts"),
+				Target: &tlist,
+				Interpolations: map[string]string{
+					":id": storage,
+				},
+			}
+
+			err := fetcher.Handle(req)
+			if err != nil {
+				log.Fatalln("error:", err)
+			}
+
 			for _, i := range tlist {
 				log.Println("- " + i)
 			}

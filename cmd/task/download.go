@@ -35,7 +35,6 @@ func newTaskDownloadCommand(config *setting.Config) *cobra.Command {
 		Short: "Download task artefacts",
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
 			id := args[0]
@@ -44,8 +43,8 @@ func newTaskDownloadCommand(config *setting.Config) *cobra.Command {
 				log.Fatalln("You need to define a task id and a target")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			fetcher.ActiveReports = true
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher.SetActiveReport(true)
 			if err := fetcher.DownloadArtefactsFromTask(id, target); err != nil {
 				log.Fatalln(err)
 			}

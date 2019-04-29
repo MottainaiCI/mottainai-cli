@@ -21,7 +21,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package webhook
 
 import (
-	"fmt"
 	"log"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
@@ -41,14 +40,13 @@ func newWebHookEditCommand(config *setting.Config) *cobra.Command {
 		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
 			id := args[0]
 			key := args[1]
 			value := args[2]
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			dat := make(map[string]interface{})
 
 			if len(args) != 3 {
@@ -58,9 +56,9 @@ func newWebHookEditCommand(config *setting.Config) *cobra.Command {
 			dat["value"] = value
 			dat["id"] = id
 
-			res, err := fetcher.GenericForm("/api/webhook/set", dat)
+			res, err := fetcher.WebHookEdit(dat)
 			tools.CheckError(err)
-			fmt.Println(string(res))
+			tools.PrintResponse(res)
 		},
 	}
 

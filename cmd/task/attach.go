@@ -21,7 +21,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package task
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"strconv"
 	"time"
@@ -30,6 +32,7 @@ import (
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
@@ -40,10 +43,9 @@ func newTaskAttachCommand(config *setting.Config) *cobra.Command {
 		Short: "attach to a task output",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			id := args[0]
 			if len(id) == 0 {
@@ -54,13 +56,23 @@ func newTaskAttachCommand(config *setting.Config) *cobra.Command {
 			for {
 				time.Sleep(time.Second + 2)
 				var t citasks.Task
-				fetcher.GetJSONOptions("/api/tasks/"+id, map[string]string{}, &t)
+
+				var err error
+				req := client.Request{
+					Route: v1.Schema.GetTaskRoute("as_json"),
+					Interpolations: map[string]string{
+						":id": id,
+					},
+				}
+				err = fetcher.HandleRaw(req, func(b io.ReadCloser) error {
+					return json.NewDecoder(b).Decode(&t)
+				})
+				tools.CheckError(err)
+
 				if t.Status != "running" {
 					if t.Status == "done" && pos == 0 {
-						buff, err := fetcher.GetOptions("/artefact/"+id+"/build_"+t.ID+".log", map[string]string{})
-						if err != nil {
-							panic(err)
-						}
+						buff, err := fetcher.TaskLog(id)
+						tools.CheckError(err)
 						tools.PrintBuff(buff)
 					} else {
 						fmt.Println("Build status: " + t.Status + " Can't attach to any live stream.")
@@ -68,10 +80,8 @@ func newTaskAttachCommand(config *setting.Config) *cobra.Command {
 					return
 				}
 
-				buff, err := fetcher.GetOptions("/api/tasks/stream_output/"+id+"/"+strconv.Itoa(pos), map[string]string{})
-				if err != nil {
-					panic(err)
-				}
+				buff, err := fetcher.TaskStream(id, strconv.Itoa(pos))
+				tools.CheckError(err)
 				pos += len(buff)
 				tools.PrintBuff(buff)
 			}

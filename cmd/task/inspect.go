@@ -45,7 +45,7 @@ func newTaskInspectCommand(config *setting.Config) *cobra.Command {
 			}
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			fetcher.BaseURL = v.GetString("master")
+			fetcher.SetBaseURL(v.GetString("master"))
 
 			th := citasks.DefaultTaskHandler(config)
 

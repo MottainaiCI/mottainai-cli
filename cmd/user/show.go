@@ -21,10 +21,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package user
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
-	tools "github.com/MottainaiCI/mottainai-cli/common"
+	user "github.com/MottainaiCI/mottainai-server/pkg/user"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
+
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	cobra "github.com/spf13/cobra"
@@ -38,9 +41,6 @@ func newUserShowCommand(config *setting.Config) *cobra.Command {
 		Args:  cobra.OnlyValidArgs,
 		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
-			var err error
-			var fetcher *client.Fetcher
-			var res []byte
 			var v *viper.Viper = config.Viper
 
 			if len(args) == 0 {
@@ -51,12 +51,26 @@ func newUserShowCommand(config *setting.Config) *cobra.Command {
 				log.Fatalln("You need to define a user id")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
-			res, err = fetcher.GetOptions("/api/user/show/"+id, map[string]string{})
+			var t *user.User
+			req := client.Request{
+				Route: v1.Schema.GetUserRoute("show"),
+				Interpolations: map[string]string{
+					":id": id,
+				},
+				Target: &t,
+			}
 
-			tools.CheckError(err)
-			fmt.Println(string(res))
+			err := fetcher.Handle(req)
+			if err != nil {
+				log.Fatalln("error:", err)
+			}
+			b, err := json.MarshalIndent(t, "", "  ")
+			if err != nil {
+				log.Fatalln("error:", err)
+			}
+			fmt.Println(string(b))
 		},
 	}
 	var flags = cmd.Flags()

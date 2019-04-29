@@ -36,9 +36,8 @@ func newNamespaceDownloadCommand(config *setting.Config) *cobra.Command {
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
 			var v *viper.Viper = config.Viper
-			var fetcher *client.Fetcher
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			fetcher.ActiveReports = true
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher.SetActiveReport(true)
 
 			ns := args[0]
 			target := args[1]

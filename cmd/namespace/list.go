@@ -21,10 +21,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package namespace
 
 import (
+	"log"
 	"os"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
@@ -38,12 +40,19 @@ func newNamespaceListCommand(config *setting.Config) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var tlist []string
 			var ns_table [][]string
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
-			fetcher.GetJSONOptions("/api/namespace/list", map[string]string{}, &tlist)
+			req := client.Request{
+				Route:  v1.Schema.GetNamespaceRoute("show_all"),
+				Target: &tlist,
+			}
+
+			err := fetcher.Handle(req)
+			if err != nil {
+				log.Fatalln("error:", err)
+			}
 
 			for _, i := range tlist {
 				ns_table = append(ns_table, []string{i})

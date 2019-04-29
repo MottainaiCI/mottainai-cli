@@ -35,7 +35,6 @@ func newStorageUploadCommand(config *setting.Config) *cobra.Command {
 		Short: "Upload file to a storage",
 		Args:  cobra.RangeArgs(3, 3),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
 			storage := args[0]
@@ -45,7 +44,7 @@ func newStorageUploadCommand(config *setting.Config) *cobra.Command {
 				log.Fatalln("You need to define a storage id, a file and a target storage path.")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.UploadStorageFile(storage, file, path)
 		},
 	}

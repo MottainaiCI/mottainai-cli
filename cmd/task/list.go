@@ -30,6 +30,7 @@ import (
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
+	"github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
@@ -43,13 +44,17 @@ func newTaskListCommand(config *setting.Config) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
 			var quiet bool
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			var tlist []citasks.Task
-			fetcher.GetJSONOptions("/api/tasks", map[string]string{}, &tlist)
+			req := client.Request{
+				Route:  v1.Schema.GetTaskRoute("show_all"),
+				Target: &tlist,
+			}
+			err = fetcher.Handle(req)
+			tools.CheckError(err)
 
 			sort.Slice(tlist[:], func(i, j int) bool {
 				return tlist[i].CreatedTime > tlist[j].CreatedTime

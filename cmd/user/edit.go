@@ -21,7 +21,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package user
 
 import (
-	"fmt"
 	"log"
 
 	user "github.com/MottainaiCI/mottainai-server/pkg/user"
@@ -40,9 +39,6 @@ func newUserEditCommand(config *setting.Config) *cobra.Command {
 		Args:  cobra.OnlyValidArgs,
 		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
-			var err error
-			var fetcher *client.Fetcher
-			var res []byte
 			var v *viper.Viper = config.Viper
 			dat := make(map[string]interface{})
 
@@ -74,13 +70,13 @@ func newUserEditCommand(config *setting.Config) *cobra.Command {
 				u.Password = us.Password
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			dat = u.ToMap()
 
-			res, err = fetcher.GenericForm("/api/user/edit/"+id, dat)
+			res, err := fetcher.UserUpdate(id, dat)
 			tools.CheckError(err)
-			fmt.Println(string(res))
+			tools.PrintResponse(res)
 		},
 	}
 	var flags = cmd.Flags()

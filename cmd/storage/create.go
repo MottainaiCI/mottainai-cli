@@ -21,7 +21,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package storage
 
 import (
-	"fmt"
 	"log"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
@@ -38,7 +37,6 @@ func newStorageCreateCommand(config *setting.Config) *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
 			storage := args[0]
@@ -46,10 +44,10 @@ func newStorageCreateCommand(config *setting.Config) *cobra.Command {
 				log.Fatalln("You need to define a storage name")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			res, err := fetcher.GetOptions("/api/storage/"+storage+"/create", map[string]string{})
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			res, err := fetcher.StorageCreate(storage)
 			tools.CheckError(err)
-			fmt.Println(string(res))
+			tools.PrintResponse(res)
 		},
 	}
 

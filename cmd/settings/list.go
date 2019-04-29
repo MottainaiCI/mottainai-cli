@@ -22,11 +22,13 @@ package settingcmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
@@ -38,15 +40,21 @@ func newSettingListCommand(config *setting.Config) *cobra.Command {
 		Short: "List settings",
 		Args:  cobra.OnlyValidArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			var err error
 			var tlist []setting.Setting
 			var setting_table [][]string
 			var quiet bool
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			fetcher.GetJSONOptions("/api/settings", map[string]string{}, &tlist)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			req := client.Request{
+				Route:  v1.Schema.GetSettingRoute("show_all"),
+				Target: &tlist,
+			}
+
+			err := fetcher.Handle(req)
+			if err != nil {
+				log.Fatalln("error:", err)
+			}
 
 			quiet, err = cmd.Flags().GetBool("quiet")
 			tools.CheckError(err)

@@ -25,6 +25,9 @@ import (
 	"fmt"
 	"log"
 
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
+
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
@@ -39,17 +42,23 @@ func newNodeShowCommand(config *setting.Config) *cobra.Command {
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
 			var n []nodes.Node
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a node id")
 			}
-
-			fetcher.GetJSONOptions("/api/nodes/show/"+id, map[string]string{}, &n)
+			req := client.Request{
+				Route: v1.Schema.GetNodeRoute("show"),
+				Interpolations: map[string]string{
+					":id": id,
+				},
+				Target: &n,
+			}
+			err := fetcher.Handle(req)
+			tools.CheckError(err)
 
 			b, err := json.MarshalIndent(n, "", "  ")
 			if err != nil {

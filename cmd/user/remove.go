@@ -21,7 +21,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package user
 
 import (
-	"fmt"
 	"log"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
@@ -37,20 +36,18 @@ func newUserRemoveCommand(config *setting.Config) *cobra.Command {
 		Short: "Remove a user",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a user id")
 			}
 
-			res, err := fetcher.GetOptions("/api/user/delete/"+id, map[string]string{})
+			res, err := fetcher.UserRemove(id)
 			tools.CheckError(err)
-
-			fmt.Println(string(res))
+			tools.PrintResponse(res)
 		},
 	}
 

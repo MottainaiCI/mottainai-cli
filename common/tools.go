@@ -20,9 +20,12 @@ package common
 
 import (
 	"fmt"
+	"strings"
+
+	event "github.com/MottainaiCI/mottainai-server/pkg/event"
+
 	cobra "github.com/spf13/cobra"
 	v "github.com/spf13/viper"
-	"strings"
 )
 
 func PrintBuff(buff []byte) {
@@ -36,6 +39,32 @@ func PrintBuff(buff []byte) {
 func CheckError(err error) {
 	if err != nil {
 		panic(err)
+	}
+}
+
+func PrintResponse(resp event.APIResponse) {
+	if len(resp.Error) > 0 {
+		fmt.Println("ERROR:")
+		fmt.Println(resp.Error)
+	}
+	if len(resp.Data) > 0 {
+		fmt.Println("DATA:")
+		fmt.Println(resp.Data)
+	}
+	if len(resp.Processed) > 0 {
+		fmt.Println("Processed: " + resp.Processed)
+	}
+	if len(resp.Status) > 0 {
+		fmt.Println("Status: " + resp.Status)
+	}
+	if len(resp.ObjType) > 0 {
+		fmt.Println("ObjType: " + resp.ObjType)
+	}
+	if len(resp.Event) > 0 {
+		fmt.Println("Event: " + resp.Event)
+	}
+	if len(resp.ID) > 0 {
+		fmt.Println("ID: " + resp.ID)
 	}
 }
 

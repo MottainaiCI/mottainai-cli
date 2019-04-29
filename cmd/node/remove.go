@@ -21,7 +21,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package node
 
 import (
-	"fmt"
 	"log"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
@@ -37,7 +36,6 @@ func newNodeRemoveCommand(config *setting.Config) *cobra.Command {
 		Short: "Remove a node",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
 			id := args[0]
@@ -45,11 +43,10 @@ func newNodeRemoveCommand(config *setting.Config) *cobra.Command {
 				log.Fatalln("You need to define a node id")
 			}
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			res, err := fetcher.GetOptions("/api/nodes/delete/"+id, map[string]string{})
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			res, err := fetcher.RemoveNode(id)
 			tools.CheckError(err)
-
-			fmt.Println(string(res))
+			tools.PrintResponse(res)
 		},
 	}
 

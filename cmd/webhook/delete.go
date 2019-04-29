@@ -21,8 +21,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package webhook
 
 import (
-	"fmt"
 	"log"
+
+	event "github.com/MottainaiCI/mottainai-server/pkg/event"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -37,10 +38,10 @@ func newWebHookDeleteCommand(config *setting.Config) *cobra.Command {
 		Short: "Delete a task or a pipeline associated to a webhook",
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
-			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			var v *viper.Viper = config.Viper
+			var err error
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			id := args[0]
 			if len(id) == 0 {
@@ -50,10 +51,16 @@ func newWebHookDeleteCommand(config *setting.Config) *cobra.Command {
 			if mytype != "task" && mytype != "pipeline" {
 				log.Fatalln("You can delete a task or a pipeline associated to a webhook")
 			}
-			res, err := fetcher.PostOptions("/api/webhook/delete/"+mytype+"/"+id, map[string]string{})
-			tools.CheckError(err)
+			var res event.APIResponse
+			switch mytype {
+			case "task":
+				res, err = fetcher.WebHookDeleteTask(id)
+			case "pipeline":
+				res, err = fetcher.WebHookDeletePipeline(id)
 
-			fmt.Println(string(res))
+			}
+			tools.CheckError(err)
+			tools.PrintResponse(res)
 		},
 	}
 

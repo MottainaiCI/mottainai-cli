@@ -36,15 +36,14 @@ func newTaskLogCommand(config *setting.Config) *cobra.Command {
 		Short: "Show log of a task",
 		Args:  cobra.RangeArgs(1, 1),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
 			id := args[0]
 			if len(id) == 0 {
 				log.Fatalln("You need to define a task id")
 			}
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			buff, err := fetcher.GetOptions("/api/tasks/stream_output/"+id+"/0", map[string]string{})
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			buff, err := fetcher.TaskLog(id)
 			if err != nil {
 				panic(err)
 			}

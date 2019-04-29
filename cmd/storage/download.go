@@ -35,11 +35,10 @@ func newStorageDownloadCommand(config *setting.Config) *cobra.Command {
 		Short: "Download storage artefacts",
 		Args:  cobra.RangeArgs(2, 2),
 		Run: func(cmd *cobra.Command, args []string) {
-			var fetcher *client.Fetcher
 			var v *viper.Viper = config.Viper
 
-			fetcher = client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			fetcher.ActiveReports = true
+			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			fetcher.SetActiveReport(true)
 
 			storage := args[0]
 			target := args[1]

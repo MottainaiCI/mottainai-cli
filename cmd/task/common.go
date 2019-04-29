@@ -21,11 +21,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package task
 
 import (
+	"encoding/json"
+	"io"
 	"regexp"
 
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 
 	"fmt"
 	"os"
@@ -33,7 +37,7 @@ import (
 	"github.com/mudler/anagent"
 )
 
-func GenerateTasks(c *client.Fetcher, dat map[string]interface{}, hostreg string) map[string]bool {
+func GenerateTasks(c client.HttpClient, dat map[string]interface{}, hostreg string) map[string]bool {
 	reg, err := regexp.Compile(hostreg)
 	if err != nil {
 		panic(err)
@@ -42,7 +46,15 @@ func GenerateTasks(c *client.Fetcher, dat map[string]interface{}, hostreg string
 
 	var n []nodes.Node
 	var q []string
-	c.GetJSONOptions("/api/nodes", map[string]string{}, &n)
+
+	req := client.Request{
+		Route: v1.Schema.GetNodeRoute("show_all"),
+	}
+
+	err = c.HandleRaw(req, func(b io.ReadCloser) error {
+		return json.NewDecoder(b).Decode(&n)
+	})
+	tools.CheckError(err)
 
 	for _, i := range n {
 		// Make a Regex to say we only want
@@ -54,17 +66,17 @@ func GenerateTasks(c *client.Fetcher, dat map[string]interface{}, hostreg string
 	}
 	for _, queue := range q {
 		dat["queue"] = queue
-		res, err := c.GenericForm("/api/tasks", dat)
+		res, err := c.CreateTask(dat)
 		if err != nil {
 			panic(err)
 		}
-		tid := string(res)
+		tid := res.ID
 		fmt.Println("Task "+tid+" has been created for", queue)
 		created[tid] = false
 	}
 	return created
 }
-func MonitorTasks(f *client.Fetcher, created map[string]bool) {
+func MonitorTasks(f client.HttpClient, created map[string]bool) {
 	agent := anagent.New()
 	var done int
 	var res = 0
@@ -72,7 +84,7 @@ func MonitorTasks(f *client.Fetcher, created map[string]bool) {
 	for k, _ := range created {
 		fmt.Println("Tracking ", k)
 	}
-	agent.TimerSeconds(int64(1), true, func(c *client.Fetcher) {
+	agent.TimerSeconds(int64(1), true, func(c client.HttpClient) {
 
 		if done >= len(created) {
 			agent.Stop()
@@ -80,7 +92,19 @@ func MonitorTasks(f *client.Fetcher, created map[string]bool) {
 
 		for k, v := range created {
 			var t citasks.Task
-			c.GetJSONOptions("/api/tasks/"+k, map[string]string{}, &t)
+
+			var err error
+			req := client.Request{
+				Route: v1.Schema.GetTaskRoute("as_json"),
+				Interpolations: map[string]string{
+					":id": k,
+				},
+			}
+			err = f.HandleRaw(req, func(b io.ReadCloser) error {
+				return json.NewDecoder(b).Decode(&t)
+			})
+			tools.CheckError(err)
+
 			if t.ID == "" && !v {
 				// There is no task anymore associated with it!
 				done++
