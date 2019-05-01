@@ -22,11 +22,55 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package client
 
-func (f *Fetcher) RegisterNode(ID, hostname string) ([]byte, error) {
-	url := f.Config.GetWeb().BuildURI("/api/nodes/register")
-	return f.PostOptions(url, map[string]string{
-		"key":      f.Config.GetAgent().AgentKey,
-		"nodeid":   ID,
-		"hostname": hostname,
-	})
+import (
+	event "github.com/MottainaiCI/mottainai-server/pkg/event"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
+)
+
+func (d *Fetcher) CreateNode() (event.APIResponse, error) {
+
+	req := Request{
+		Route: v1.Schema.GetNodeRoute("create"),
+	}
+
+	return d.HandleAPIResponse(req)
+}
+
+func (d *Fetcher) RemoveNode(id string) (event.APIResponse, error) {
+
+	req := Request{
+		Route:          v1.Schema.GetNodeRoute("delete"),
+		Interpolations: map[string]string{":id": id},
+	}
+
+	return d.HandleAPIResponse(req)
+}
+
+func (d *Fetcher) NodesTask(key string, target interface{}) error {
+
+	req := Request{
+		Route:          v1.Schema.GetNodeRoute("show_tasks"),
+		Interpolations: map[string]string{":key": key},
+		Target:         target,
+	}
+
+	err := d.Handle(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (f *Fetcher) RegisterNode(ID, hostname string) (event.APIResponse, error) {
+	req := Request{
+		Route: v1.Schema.GetNodeRoute("register"),
+		Options: map[string]interface{}{
+			"key":      f.Config.GetAgent().AgentKey,
+			"nodeid":   ID,
+			"hostname": hostname,
+		},
+	}
+
+	return f.HandleAPIResponse(req)
 }

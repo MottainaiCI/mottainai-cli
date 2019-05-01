@@ -256,9 +256,9 @@ func GenDefault(viper *v.Viper) {
 	viper.SetDefault("broker.broker", "amqp://guest@127.0.0.1:5672/")
 	viper.SetDefault("broker.default_queue", "global_tasks")
 	viper.SetDefault("broker.result_backend", "amqp://guest@127.0.0.1:5672/")
-	viper.SetDefault("broker.mgmt_uri", "http://127.0.0.1:15672")
-	viper.SetDefault("broker.pass", "guest")
-	viper.SetDefault("broker.user", "guest")
+	viper.SetDefault("broker.mgmt_uri", "")
+	viper.SetDefault("broker.pass", "")
+	viper.SetDefault("broker.user", "")
 	viper.SetDefault("broker.exchange", "machinery_exchange")
 	viper.SetDefault("broker.exchange_type", "direct")
 	viper.SetDefault("broker.binding_key", "machinery_task")
@@ -338,7 +338,7 @@ func (c *WebConfig) BuildURI(pattern string) string {
 			path = path[0 : len(path)-1]
 		}
 	}
-	if pattern[0:1] != "/" {
+	if len(pattern) != 0 && pattern[0:1] != "/" {
 		pattern = "/" + pattern
 	}
 	return path + pattern

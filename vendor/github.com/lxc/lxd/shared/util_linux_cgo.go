@@ -35,6 +35,8 @@ import (
 #include <sys/types.h>
 #include <sys/un.h>
 
+#include "../lxd/include/memory_utils.h"
+
 #ifndef AT_SYMLINK_FOLLOW
 #define AT_SYMLINK_FOLLOW    0x400
 #endif
@@ -108,10 +110,6 @@ void create_pty(int *master, int *slave, uid_t uid, gid_t gid) {
 		fprintf(stderr, "Warning: error chowning pty to container root\n");
 		fprintf(stderr, "Continuing...\n");
 	}
-	if (fchown(*master, uid, gid) < 0) {
-		fprintf(stderr, "Warning: error chowning pty to container root\n");
-		fprintf(stderr, "Continuing...\n");
-	}
 }
 
 void create_pipe(int *master, int *slave) {
@@ -150,12 +148,11 @@ again:
 int lxc_abstract_unix_send_fds(int fd, int *sendfds, int num_sendfds,
 			       void *data, size_t size)
 {
-	int ret;
+	__do_free char *cmsgbuf = NULL;
 	struct msghdr msg;
 	struct iovec iov;
 	struct cmsghdr *cmsg = NULL;
 	char buf[1] = {0};
-	char *cmsgbuf;
 	size_t cmsgbufsize = CMSG_SPACE(num_sendfds * sizeof(int));
 
 	memset(&msg, 0, sizeof(msg));
@@ -182,22 +179,18 @@ int lxc_abstract_unix_send_fds(int fd, int *sendfds, int num_sendfds,
 	msg.msg_iov = &iov;
 	msg.msg_iovlen = 1;
 
-	ret = sendmsg(fd, &msg, MSG_NOSIGNAL);
-	if (ret < 0)
-		fprintf(stderr, "%s - Failed to send file descriptor\n", strerror(errno));
-	free(cmsgbuf);
-	return ret;
+	return sendmsg(fd, &msg, MSG_NOSIGNAL);
 }
 
 int lxc_abstract_unix_recv_fds(int fd, int *recvfds, int num_recvfds,
 			       void *data, size_t size)
 {
+	__do_free char *cmsgbuf = NULL;
 	int ret;
 	struct msghdr msg;
 	struct iovec iov;
 	struct cmsghdr *cmsg = NULL;
 	char buf[1] = {0};
-	char *cmsgbuf;
 	size_t cmsgbufsize = CMSG_SPACE(num_recvfds * sizeof(int));
 
 	memset(&msg, 0, sizeof(msg));
@@ -218,7 +211,7 @@ int lxc_abstract_unix_recv_fds(int fd, int *recvfds, int num_recvfds,
 	ret = recvmsg(fd, &msg, 0);
 	if (ret <= 0) {
 		fprintf(stderr, "%s - Failed to receive file descriptor\n", strerror(errno));
-		goto out;
+		return ret;
 	}
 
 	cmsg = CMSG_FIRSTHDR(&msg);
@@ -229,8 +222,6 @@ int lxc_abstract_unix_recv_fds(int fd, int *recvfds, int num_recvfds,
 		memcpy(recvfds, CMSG_DATA(cmsg), num_recvfds * sizeof(int));
 	}
 
-out:
-	free(cmsgbuf);
 	return ret;
 }
 */

@@ -19,6 +19,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:207d1c991e823eaa28f97c9f49f5b687e6ee45dccb012a74c6c934981ccf64a6"
+  name = "code.cloudfoundry.org/systemcerts"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ca00b2f806f2fa1ded784ade357bad1ea3f1fbbe"
+
+[[projects]]
+  branch = "master"
   digest = "1:6da51e5ec493ad2b44cb04129e2d0a068c8fb9bd6cb5739d199573558696bb94"
   name = "github.com/Azure/go-ansiterm"
   packages = [
@@ -38,10 +46,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:db65cfe4eab36f219f3ed338bebc069e509891de57247c2c4cf1b880e9759be5"
+  digest = "1:532315401363466b4cb04417a2a4295868ccfe1a3b641d3d0c4732d612d0ffa8"
   name = "github.com/MottainaiCI/mottainai-server"
   packages = [
     "pkg/client",
+    "pkg/event",
     "pkg/namespace",
     "pkg/nodes",
     "pkg/settings",
@@ -51,9 +60,11 @@
     "pkg/user",
     "pkg/utils",
     "pkg/webhook",
+    "routes/schema",
+    "routes/schema/v1",
   ]
   pruneopts = "UT"
-  revision = "73afcb16408e12b57a26b9329f4cf2ed053ad0e6"
+  revision = "ce97f84b13b493bbe1f7e52cd3ad37524d45db3a"
 
 [[projects]]
   branch = "master"
@@ -127,6 +138,14 @@
   pruneopts = "UT"
   revision = "54b27db64c180751e7049321a2e109ff220ccdcc"
   version = "v1.2.0"
+
+[[projects]]
+  digest = "1:b67d9fb93495f20c1650448395a35d8c8a05cc1744bdd9986f5bc69d5d114f22"
+  name = "github.com/Unknwon/com"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "41959bdd855fb7db467f78865d5f9044507df1cd"
+  version = "v2"
 
 [[projects]]
   digest = "1:a4fd010b4b9d63a242e97bb8c117d8ad2ed98e375adb254d3f9c7d04ff5b1a4e"
@@ -350,6 +369,14 @@
   version = "v1.38.3"
 
 [[projects]]
+  branch = "master"
+  digest = "1:bdb17865b13e720add16eaa212872b4306c8521f367c7a7ff2c10cef1e7afdb1"
+  name = "github.com/go-macaron/inject"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d8a0b8677191f4380287cfebd08e462217bac7ad"
+
+[[projects]]
   digest = "1:bbadccf3d3317ea03c0dac0b45b673b4b397c8f91a1d2eff550a3c51c4ad770e"
   name = "github.com/gogo/protobuf"
   packages = ["proto"]
@@ -499,6 +526,14 @@
   revision = "d5e5a8405ef9633c84af42fbcc734ec8dd73c198"
 
 [[projects]]
+  digest = "1:e67535e91447a130af9c055bcd01974536ce860187b766c3d15c78416c6772f1"
+  name = "github.com/juju/schema"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "29562ba24201043ee1dd1ef422ff1d16fc1cf29d"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:4b100fcfff4c16b8cccada24d19da4826c7d36f2b6065df146eeeffc3ae7a853"
   name = "github.com/juju/webbrowser"
@@ -547,8 +582,7 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:e137f70f010fbb7c6114333a5cc112dddc9d404bab569ba2ea5321045f36c70b"
+  digest = "1:8a6671d3e63b5e16d14d9263cb6dbb7f02eabb801a1902dc96d95f47f5f015dd"
   name = "github.com/lxc/lxd"
   packages = [
     "client",
@@ -565,7 +599,8 @@
     "shared/termios",
   ]
   pruneopts = "UT"
-  revision = "b0ea9e83e9b9f7d5a40e2d227475b6425a47072e"
+  revision = "f51c28a3744372324480a92076dcaebf2d71ccac"
+  version = "lxd-3.12"
 
 [[projects]]
   digest = "1:c568d7727aa262c32bdf8a3f7db83614f7af0ed661474b24588de635c20024c7"
@@ -1146,13 +1181,41 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:c444bfd08694c60973915ba5f0995b682152f235c8ba7acc59b54ef2759f25ee"
+  digest = "1:d37c61a335d13bc49b3f90e9e13c8686e4548839b69c58549e727afb2245c454"
+  name = "gopkg.in/ini.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c85607071cf08ca1adaf48319cd1aa322e81d8c1"
+  version = "v1.42.0"
+
+[[projects]]
+  digest = "1:fcd8985b8b48658cec56adc8b496903729c01ae0510f6daebee2b00e17dead98"
+  name = "gopkg.in/juju/environschema.v1"
+  packages = [
+    ".",
+    "form",
+  ]
+  pruneopts = "UT"
+  revision = "d79e96fb1039e808c217847f4c45cce48e6ff2a5"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:3d43a1d68f315a1c4c2cd20ee4d35c96695f17637502366341ac43b7813ea95f"
+  name = "gopkg.in/macaron.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "dfcb80ca86e8534962c62812efd93209c7e600e7"
+  version = "v1.3.2"
+
+[[projects]]
+  digest = "1:83590f2a0c660cfff66876d6adf373e162e4063c19e7f4cace1cdb9f1eba6050"
   name = "gopkg.in/macaroon-bakery.v2"
   packages = [
     "bakery",
     "bakery/checkers",
     "bakery/internal/macaroonpb",
     "httpbakery",
+    "httpbakery/form",
     "internal/httputil",
   ]
   pruneopts = "UT"
@@ -1291,6 +1354,7 @@
     "github.com/Azure/go-ansiterm",
     "github.com/Microsoft/go-winio",
     "github.com/MottainaiCI/mottainai-server/pkg/client",
+    "github.com/MottainaiCI/mottainai-server/pkg/event",
     "github.com/MottainaiCI/mottainai-server/pkg/namespace",
     "github.com/MottainaiCI/mottainai-server/pkg/nodes",
     "github.com/MottainaiCI/mottainai-server/pkg/settings",
@@ -1300,6 +1364,7 @@
     "github.com/MottainaiCI/mottainai-server/pkg/user",
     "github.com/MottainaiCI/mottainai-server/pkg/utils",
     "github.com/MottainaiCI/mottainai-server/pkg/webhook",
+    "github.com/MottainaiCI/mottainai-server/routes/schema/v1",
     "github.com/RichardKnop/logging",
     "github.com/RichardKnop/machinery/v1",
     "github.com/RichardKnop/machinery/v1/backends",

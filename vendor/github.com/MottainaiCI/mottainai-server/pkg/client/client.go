@@ -43,14 +43,18 @@ import (
 
 	"github.com/mxk/go-flowrate/flowrate"
 
+	event "github.com/MottainaiCI/mottainai-server/pkg/event"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	"github.com/MottainaiCI/mottainai-server/pkg/utils"
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
 
 	"github.com/mudler/anagent"
 )
 
+var _ HttpClient = &Fetcher{}
+
 type HttpClient interface {
-	AppendTaskOutput(string) ([]byte, error)
+	AppendTaskOutput(string) (event.APIResponse, error)
 
 	GetTask() ([]byte, error)
 	AbortTask()
@@ -59,16 +63,80 @@ type HttpClient interface {
 	DownloadArtefactsFromStorage(string, string) error
 	UploadFile(string, string) error
 	FailTask(string)
-	SetTaskField(string, string) ([]byte, error)
-	RegisterNode(string, string) ([]byte, error)
+	SetTaskField(string, string) (event.APIResponse, error)
+	RegisterNode(string, string) (event.APIResponse, error)
 	Doc(string)
 	SetUploadChunkSize(int)
-	SetupTask()
+	SetupTask() (event.APIResponse, error)
 	FinishTask()
 	ErrorTask()
 	SuccessTask()
 	StreamOutput(io.Reader)
 	RunTask()
+
+	StorageDelete(id string) (event.APIResponse, error)
+	StorageRemovePath(id, path string) (event.APIResponse, error)
+	StorageCreate(t string) (event.APIResponse, error)
+	SettingCreate(data map[string]interface{}) (event.APIResponse, error)
+	SettingRemove(id string) (event.APIResponse, error)
+	SettingUpdate(data map[string]interface{}) (event.APIResponse, error)
+	PlanDelete(id string) (event.APIResponse, error)
+	PlanCreate(taskdata map[string]interface{}) (event.APIResponse, error)
+	SetBaseURL(url string)
+	SetAgent(a *anagent.Anagent)
+	SetActiveReport(b bool)
+	SetToken(t string)
+	HandleRaw(req Request, fn func(io.ReadCloser) error) error
+	Handle(req Request) error
+	HandleAPIResponse(req Request) (event.APIResponse, error)
+	HandleUploadLargeFile(request Request, paramName string, filePath string, chunkSize int) error
+	TaskLog(id string) ([]byte, error)
+	TaskDelete(id string) (event.APIResponse, error)
+	SetTaskStatus(status string) (event.APIResponse, error)
+	StartTask(id string) (event.APIResponse, error)
+	StopTask(id string) (event.APIResponse, error)
+	CreateTask(taskdata map[string]interface{}) (event.APIResponse, error)
+	CloneTask(id string) (event.APIResponse, error)
+	TaskLogArtefact(id string) ([]byte, error)
+	TaskStream(id, pos string) ([]byte, error)
+	AllTasks() ([]byte, error)
+	SetTaskResult(result string) (event.APIResponse, error)
+	SetTaskOutput(output string) (event.APIResponse, error)
+	WebHookTaskUpdate(id string, data map[string]interface{}) (event.APIResponse, error)
+	WebHookPipelineUpdate(id string, data map[string]interface{}) (event.APIResponse, error)
+	WebHookDelete(id string) (event.APIResponse, error)
+	WebHookDeleteTask(id string) (event.APIResponse, error)
+	WebHookDeletePipeline(id string) (event.APIResponse, error)
+	WebHookEdit(data map[string]interface{}) (event.APIResponse, error)
+	WebHookCreate(t string) (event.APIResponse, error)
+	TokenDelete(id string) (event.APIResponse, error)
+	TokenCreate() (event.APIResponse, error)
+	UploadStorageFile(storageid, fullpath, relativepath string) error
+	UploadArtefactRetry(fullpath, relativepath string, trials int) error
+	UploadArtefact(fullpath, relativepath string) error
+	UploadNamespaceFile(namespace, fullpath, relativepath string) error
+	UserCreate(data map[string]interface{}) (event.APIResponse, error)
+	UserRemove(id string) (event.APIResponse, error)
+	UserUpdate(id string, data map[string]interface{}) (event.APIResponse, error)
+	UserSet(id, t string) (event.APIResponse, error)
+	UserUnset(id, t string) (event.APIResponse, error)
+	PipelineDelete(id string) (event.APIResponse, error)
+	PipelineCreate(taskdata map[string]interface{}) (event.APIResponse, error)
+	NamespaceDelete(id string) (event.APIResponse, error)
+	NamespaceRemovePath(id, path string) (event.APIResponse, error)
+	NamespaceClone(from, to string) (event.APIResponse, error)
+	NamespaceAppend(id, name string) (event.APIResponse, error)
+	NamespaceTag(id, tag string) (event.APIResponse, error)
+	NamespaceCreate(t string) (event.APIResponse, error)
+	GetBaseURL() (url string)
+	CreateNode() (event.APIResponse, error)
+	RemoveNode(id string) (event.APIResponse, error)
+	NodesTask(key string, target interface{}) error
+	NamespaceFileList(namespace string) ([]string, error)
+	StorageFileList(storage string) ([]string, error)
+	TaskFileList(task string) ([]string, error)
+	DownloadArtefactsGeneric(id, target, artefact_type string) error
+	Download(url, where string) (bool, error)
 }
 
 type Fetcher struct {
@@ -85,26 +153,26 @@ type Fetcher struct {
 	Config        *setting.Config
 }
 
-func NewTokenClient(host, token string, config *setting.Config) *Fetcher {
+func NewTokenClient(host, token string, config *setting.Config) HttpClient {
 	f := NewBasicClient(config)
-	f.BaseURL = host
-	f.Token = token
+	f.SetBaseURL(host)
+	f.SetToken(token)
 	return f
 }
 
-func NewClient(host string, config *setting.Config) *Fetcher {
+func NewClient(host string, config *setting.Config) HttpClient {
 	f := NewBasicClient(config)
-	f.BaseURL = host
+	f.SetBaseURL(host)
 	return f
 }
 
-func NewFetcher(docID string, config *setting.Config) *Fetcher {
+func NewFetcher(docID string, config *setting.Config) HttpClient {
 	f := NewClient(config.GetWeb().AppURL, config)
-	f.docID = docID
+	f.Doc(docID)
 	return f
 }
 
-func NewBasicClient(config *setting.Config) *Fetcher {
+func NewBasicClient(config *setting.Config) HttpClient {
 	// Basic constructor
 	f := &Fetcher{Config: config, ChunkSize: 512}
 	if len(config.GetGeneral().TLSCert) > 0 {
@@ -113,11 +181,28 @@ func NewBasicClient(config *setting.Config) *Fetcher {
 	return f
 }
 
-func New(docID string, a *anagent.Anagent, config *setting.Config) *Fetcher {
+func New(docID string, a *anagent.Anagent, config *setting.Config) HttpClient {
 	f := NewClient(config.GetWeb().AppURL, config)
-	f.docID = docID
-	f.Agent = a
+	f.Doc(docID)
+	f.SetAgent(a)
 	return f
+}
+
+func (f *Fetcher) GetBaseURL() (url string) {
+	url = f.BaseURL
+	return
+}
+func (f *Fetcher) SetBaseURL(url string) {
+	f.BaseURL = url
+}
+func (f *Fetcher) SetAgent(a *anagent.Anagent) {
+	f.Agent = a
+}
+func (f *Fetcher) SetActiveReport(b bool) {
+	f.ActiveReports = b
+}
+func (f *Fetcher) SetToken(t string) {
+	f.Token = t
 }
 
 func (f *Fetcher) Doc(id string) {
@@ -171,180 +256,124 @@ func (f *Fetcher) setAuthHeader(r *http.Request) *http.Request {
 	return r
 }
 
-func (f *Fetcher) GetJSONOptions(url string, option map[string]string, target interface{}) error {
-	hclient := f.newHttpClient()
-	request, err := http.NewRequest("GET", f.BaseURL+url, nil)
-	f.setAuthHeader(request)
-
-	if err != nil {
-		return err
-	}
-
-	q := request.URL.Query()
-	for k, v := range option {
-		q.Add(k, v)
-	}
-	request.URL.RawQuery = q.Encode()
-	if err != nil {
-		return err
-	}
-
-	response, err := hclient.Do(request)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-
-	return json.NewDecoder(response.Body).Decode(target)
+type Request struct {
+	Route          schema.Route
+	Interpolations map[string]string
+	Options        map[string]interface{}
+	Target         interface{}
+	Body           io.Reader
 }
 
-func (f *Fetcher) GetOptions(url string, option map[string]string) ([]byte, error) {
+func (f *Fetcher) HandleRaw(req Request, fn func(io.ReadCloser) error) error {
+	r := req.Route
+	interpolations := req.Interpolations
+	option := req.Options
+
 	hclient := f.newHttpClient()
-	request, err := http.NewRequest("GET", f.BaseURL+url, nil)
+	baseurl := f.BaseURL + f.Config.GetWeb().BuildURI("")
+	request, err := r.NewRequest(baseurl, interpolations, req.Body)
 	if err != nil {
-		return []byte{}, err
+		return err
 	}
-	f.setAuthHeader(request)
 
-	q := request.URL.Query()
-	for k, v := range option {
-		q.Add(k, v)
-	}
-	request.URL.RawQuery = q.Encode()
-	response, err := hclient.Do(request)
-	if err != nil {
-		return []byte{}, err
-	}
-	defer response.Body.Close()
-
-	contents, err := ioutil.ReadAll(response.Body)
-	return contents, err
-}
-
-func (f *Fetcher) GenericForm(URL string, option map[string]interface{}) ([]byte, error) {
-	hclient := f.newHttpClient()
-	form := url.Values{}
 	var InterfaceList []interface{}
 	var Strings []string
 	var String string
 
-	for k, v := range option {
-		if reflect.TypeOf(v) == reflect.TypeOf(InterfaceList) {
-			for _, el := range v.([]interface{}) {
-				form.Add(k, el.(string))
-			}
-		} else if reflect.TypeOf(v) == reflect.TypeOf(Strings) {
-			for _, el := range v.([]string) {
-				form.Add(k, el)
-			}
+	if r.RequireFormEncode() {
+		form := url.Values{}
 
-		} else if reflect.TypeOf(v) == reflect.TypeOf(float64(0)) {
-			form.Add(k, utils.FloatToString(v.(float64)))
+		for k, v := range option {
+			if reflect.TypeOf(v) == reflect.TypeOf(InterfaceList) {
+				for _, el := range v.([]interface{}) {
+					form.Add(k, el.(string))
+				}
+			} else if reflect.TypeOf(v) == reflect.TypeOf(Strings) {
+				for _, el := range v.([]string) {
+					form.Add(k, el)
+				}
 
-		} else if reflect.TypeOf(v) == reflect.TypeOf(String) {
-			form.Add(k, v.(string))
-		} else {
-			var b bytes.Buffer
-			e := gob.NewEncoder(&b)
-			if err := e.Encode(v); err != nil {
-				panic(err)
+			} else if reflect.TypeOf(v) == reflect.TypeOf(float64(0)) {
+				form.Add(k, utils.FloatToString(v.(float64)))
+
+			} else if reflect.TypeOf(v) == reflect.TypeOf(String) {
+				form.Add(k, v.(string))
+			} else {
+				var b bytes.Buffer
+				e := gob.NewEncoder(&b)
+				if err := e.Encode(v); err != nil {
+					return err
+				}
+				form.Add(k, b.String())
 			}
-			form.Add(k, b.String())
 		}
+
+		request, err = r.NewRequest(baseurl, interpolations, strings.NewReader(form.Encode()))
+	} else {
+		q := request.URL.Query()
+		for k, v := range option {
+			if reflect.TypeOf(v) == reflect.TypeOf(InterfaceList) {
+				for _, el := range v.([]interface{}) {
+					q.Add(k, el.(string))
+				}
+			} else if reflect.TypeOf(v) == reflect.TypeOf(Strings) {
+				for _, el := range v.([]string) {
+					q.Add(k, el)
+				}
+
+			} else if reflect.TypeOf(v) == reflect.TypeOf(float64(0)) {
+				q.Add(k, utils.FloatToString(v.(float64)))
+
+			} else if reflect.TypeOf(v) == reflect.TypeOf(String) {
+				q.Add(k, v.(string))
+			} else {
+				var b bytes.Buffer
+				e := gob.NewEncoder(&b)
+				if err := e.Encode(v); err != nil {
+					return err
+				}
+				q.Add(k, b.String())
+			}
+		}
+		request.URL.RawQuery = q.Encode()
 	}
 
-	request, err := http.NewRequest("POST", f.BaseURL+URL, strings.NewReader(form.Encode()))
 	f.setAuthHeader(request)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	response, err := hclient.Do(request)
 	if err != nil {
-		return []byte{}, err
+		return err
 	}
 	defer response.Body.Close()
 
-	contents, err := ioutil.ReadAll(response.Body)
-	return contents, err
+	return fn(response.Body)
 }
 
-func (f *Fetcher) Form(URL string, option map[string]string) ([]byte, error) {
-	hclient := f.newHttpClient()
-
-	form := url.Values{}
-	for k, v := range option {
-		form.Add(k, v)
-	}
-
-	request, err := http.NewRequest("POST", f.BaseURL+URL, strings.NewReader(form.Encode()))
-	f.setAuthHeader(request)
-	if err != nil {
-		return []byte{}, err
-	}
-	//request.Header.Add("Content-Type", writer.FormDataContentType())
-
-	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	// q := request.URL.Query()
-	// for k, v := range option {
-	// 	q.Add(k, v)
-	// }
-	// request.URL.RawQuery = q.Encode()
-	// if err != nil {
-	// 	return []byte{}, err
-	// }
-
-	response, err := hclient.Do(request)
-	if err != nil {
-		return []byte{}, err
-	}
-	defer response.Body.Close()
-
-	contents, err := ioutil.ReadAll(response.Body)
-	return contents, err
+func (f *Fetcher) Handle(req Request) error {
+	return f.HandleRaw(req, func(b io.ReadCloser) error {
+		return json.NewDecoder(b).Decode(req.Target)
+	})
 }
 
-func (f *Fetcher) PostOptions(URL string, option map[string]string) ([]byte, error) {
-	hclient := f.newHttpClient()
-
-	form := url.Values{}
-	for k, v := range option {
-		form.Add(k, v)
-	}
-
-	request, err := http.NewRequest("POST", f.BaseURL+URL, strings.NewReader(form.Encode()))
-	f.setAuthHeader(request)
-
+func (f *Fetcher) HandleAPIResponse(req Request) (event.APIResponse, error) {
+	resp := &event.APIResponse{}
+	req.Target = resp
+	err := f.Handle(req)
 	if err != nil {
-		return []byte{}, err
-	}
-	//request.Header.Add("Content-Type", writer.FormDataContentType())
-
-	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	q := request.URL.Query()
-	for k, v := range option {
-		q.Add(k, v)
-	}
-	request.URL.RawQuery = q.Encode()
-	if err != nil {
-		return []byte{}, err
+		return *resp, err
 	}
 
-	response, err := hclient.Do(request)
-	if err != nil {
-		return []byte{}, err
-	}
-	defer response.Body.Close()
-
-	contents, err := ioutil.ReadAll(response.Body)
-	return contents, err
+	return *resp, nil
 }
 
-func (f *Fetcher) UploadLargeFile(uri string, params map[string]string, paramName string, filePath string, chunkSize int) error {
+func (f *Fetcher) HandleUploadLargeFile(request Request, paramName string, filePath string, chunkSize int) error {
+
+	r := request.Route
+	interpolations := request.Interpolations
+	option := request.Options
+
+	baseurl := f.BaseURL + f.Config.GetWeb().BuildURI("")
+
 	//open file and retrieve info
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -362,8 +391,8 @@ func (f *Fetcher) UploadLargeFile(uri string, params map[string]string, paramNam
 	//part: parameters
 	mpWriter := multipart.NewWriter(byteBuf)
 
-	for key, value := range params {
-		err = mpWriter.WriteField(key, value)
+	for key, value := range option {
+		err = mpWriter.WriteField(key, value.(string))
 		if err != nil {
 			return err
 		}
@@ -412,8 +441,7 @@ func (f *Fetcher) UploadLargeFile(uri string, params map[string]string, paramNam
 		_, _ = wr.Write(lastBoundary)
 	}()
 
-	//construct request with rd
-	req, err := http.NewRequest("POST", f.BaseURL+uri, rd)
+	req, err := r.NewRequest(baseurl, interpolations, rd)
 	if err != nil {
 		return err
 	}
@@ -422,11 +450,10 @@ func (f *Fetcher) UploadLargeFile(uri string, params map[string]string, paramNam
 	if f.Config.GetAgent().UploadRateLimit != 0 {
 		f.AppendTaskOutput("Upload with bandwidth limit of: " + strconv.FormatInt(1024*f.Config.GetAgent().UploadRateLimit, 10))
 		reader := flowrate.NewReader(io.Reader(rd), 1024*f.Config.GetAgent().UploadRateLimit)
-		req, err = http.NewRequest("POST", f.BaseURL+uri, reader)
+		req, err = r.NewRequest(baseurl, interpolations, reader)
 		if err != nil {
 			return err
 		}
-
 	}
 
 	f.setAuthHeader(req)
@@ -444,60 +471,19 @@ func (f *Fetcher) UploadLargeFile(uri string, params map[string]string, paramNam
 	client.Timeout = 0
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
-	} else {
-		log.Println(resp.StatusCode)
-		log.Println(resp.Header)
+		return err
+	}
+	defer resp.Body.Close()
 
-		body := &bytes.Buffer{}
-		_, _ = body.ReadFrom(resp.Body)
-		resp.Body.Close()
-		log.Println(body)
-		if resp.StatusCode != 200 {
-			return errors.New("[Upload] Error while uploading " + filePath + ": " + strconv.Itoa(resp.StatusCode))
-		}
-	}
-	return err
-}
-
-// Creates a new file upload http request with optional extra params
-func (f *Fetcher) Upload(uri string, params map[string]string, paramName, path string) (*http.Request, error) {
-	file, err := os.Open(path)
+	body := &bytes.Buffer{}
+	_, err = body.ReadFrom(resp.Body)
 	if err != nil {
-		return nil, err
-	}
-	fileContents, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-	fi, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-	file.Close()
-
-	body := new(bytes.Buffer)
-	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile(paramName, fi.Name())
-	if err != nil {
-		return nil, err
-	}
-	part.Write(fileContents)
-
-	for key, val := range params {
-		_ = writer.WriteField(key, val)
-	}
-	err = writer.Close()
-	if err != nil {
-		return nil, err
+		return err
 	}
 
-	request, err := http.NewRequest("POST", f.BaseURL+uri, body)
-	f.setAuthHeader(request)
-
-	if err != nil {
-		return request, nil
+	if resp.StatusCode != 200 {
+		return errors.New("[Upload] Error while uploading " + filePath + ": " + strconv.Itoa(resp.StatusCode))
 	}
-	request.Header.Add("Content-Type", writer.FormDataContentType())
-	return request, nil
+
+	return nil
 }

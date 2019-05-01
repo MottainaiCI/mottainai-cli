@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/robfig/cron.v2"
@@ -256,6 +257,7 @@ var KnownContainerConfigKeys = map[string]func(value string) error{
 	"security.devlxd.images": IsBool,
 
 	"security.protection.delete": IsBool,
+	"security.protection.shift":  IsBool,
 
 	"security.idmap.base":     IsUint32,
 	"security.idmap.isolated": IsBool,
@@ -284,6 +286,11 @@ var KnownContainerConfigKeys = map[string]func(value string) error{
 	},
 	"snapshots.schedule.stopped": IsBool,
 	"snapshots.pattern":          IsAny,
+	"snapshots.expiry": func(value string) error {
+		// Validate expression
+		_, err := GetSnapshotExpiry(time.Time{}, value)
+		return err
+	},
 
 	// Caller is responsible for full validation of any raw.* value
 	"raw.apparmor": IsAny,
@@ -295,8 +302,9 @@ var KnownContainerConfigKeys = map[string]func(value string) error{
 	"volatile.base_image":       IsAny,
 	"volatile.last_state.idmap": IsAny,
 	"volatile.last_state.power": IsAny,
-	"volatile.idmap.next":       IsAny,
 	"volatile.idmap.base":       IsAny,
+	"volatile.idmap.current":    IsAny,
+	"volatile.idmap.next":       IsAny,
 	"volatile.apply_quota":      IsAny,
 }
 
