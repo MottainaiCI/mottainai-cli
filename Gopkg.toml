@@ -44,7 +44,10 @@
   branch = "master"
   name = "github.com/docker/libnetwork"
 
-
 [prune]
   go-tests = true
   unused-packages = true
+
+[[prune.project]]
+name = "github.com/lxc/lxd"
+unused-packages = false
