@@ -7,6 +7,7 @@
 package ghw
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"strings"
@@ -15,19 +16,88 @@ import (
 )
 
 var (
-	RE_PCI_ADDRESS *regexp.Regexp = regexp.MustCompile(
-		"^(([0-9a-f]{0,4}):)?([0-9a-f]{2}):([0-9a-f]{2})\\.([0-9a-f]{1})$",
+	regexPCIAddress *regexp.Regexp = regexp.MustCompile(
+		`^(([0-9a-f]{0,4}):)?([0-9a-f]{2}):([0-9a-f]{2})\.([0-9a-f]{1})$`,
 	)
 )
 
 type PCIDevice struct {
-	Address              string // The PCI address of the device
-	Vendor               *pcidb.PCIVendor
-	Product              *pcidb.PCIProduct
-	Subsystem            *pcidb.PCIProduct // optional subvendor/sub-device information
-	Class                *pcidb.PCIClass
-	Subclass             *pcidb.PCISubclass             // optional sub-class for the device
-	ProgrammingInterface *pcidb.PCIProgrammingInterface // optional programming interface
+	// The PCI address of the device
+	Address   string         `json:"address"`
+	Vendor    *pcidb.Vendor  `json:"vendor"`
+	Product   *pcidb.Product `json:"product"`
+	Subsystem *pcidb.Product `json:"subsystem"`
+	// optional subvendor/sub-device information
+	Class *pcidb.Class `json:"class"`
+	// optional sub-class for the device
+	Subclass *pcidb.Subclass `json:"subclass"`
+	// optional programming interface
+	ProgrammingInterface *pcidb.ProgrammingInterface `json:"programming_interface"`
+}
+
+// NOTE(jaypipes) PCIDevice has a custom JSON marshaller because we don't want
+// to serialize the entire PCIDB information for the Vendor (which includes all
+// of the vendor's products, etc). Instead, we simply serialize the ID and
+// human-readable name of the vendor, product, class, etc.
+func (pd *PCIDevice) MarshalJSON() ([]byte, error) {
+	b := bytes.NewBufferString("{")
+	b.WriteString(fmt.Sprintf("\"address\":\"%s\"", pd.Address))
+	b.WriteString(",\"vendor\": {")
+	b.WriteString(
+		fmt.Sprintf(
+			"\"id\":\"%s\",\"name\":\"%s\"",
+			pd.Vendor.ID,
+			pd.Vendor.Name,
+		),
+	)
+	b.WriteString("},")
+	b.WriteString("\"product\": {")
+	b.WriteString(
+		fmt.Sprintf(
+			"\"id\":\"%s\",\"name\":\"%s\"",
+			pd.Product.ID,
+			pd.Product.Name,
+		),
+	)
+	b.WriteString("},")
+	b.WriteString("\"subsystem\": {")
+	b.WriteString(
+		fmt.Sprintf(
+			"\"id\":\"%s\",\"name\":\"%s\"",
+			pd.Subsystem.ID,
+			pd.Subsystem.Name,
+		),
+	)
+	b.WriteString("},")
+	b.WriteString("\"class\": {")
+	b.WriteString(
+		fmt.Sprintf(
+			"\"id\":\"%s\",\"name\":\"%s\"",
+			pd.Class.ID,
+			pd.Class.Name,
+		),
+	)
+	b.WriteString("},")
+	b.WriteString("\"subclass\": {")
+	b.WriteString(
+		fmt.Sprintf(
+			"\"id\":\"%s\",\"name\":\"%s\"",
+			pd.Subclass.ID,
+			pd.Subclass.Name,
+		),
+	)
+	b.WriteString("},")
+	b.WriteString("\"programming_interface\": {")
+	b.WriteString(
+		fmt.Sprintf(
+			"\"id\":\"%s\",\"name\":\"%s\"",
+			pd.ProgrammingInterface.ID,
+			pd.ProgrammingInterface.Name,
+		),
+	)
+	b.WriteString("}")
+	b.WriteString("}")
+	return b.Bytes(), nil
 }
 
 func (di *PCIDevice) String() string {
@@ -53,12 +123,13 @@ func (di *PCIDevice) String() string {
 }
 
 type PCIInfo struct {
+	ctx *context
 	// hash of class ID -> class information
-	Classes map[string]*pcidb.PCIClass
+	Classes map[string]*pcidb.Class
 	// hash of vendor ID -> vendor information
-	Vendors map[string]*pcidb.PCIVendor
+	Vendors map[string]*pcidb.Vendor
 	// hash of vendor ID + product/device ID -> product information
-	Products map[string]*pcidb.PCIProduct
+	Products map[string]*pcidb.Product
 }
 
 type PCIAddress struct {
@@ -77,7 +148,7 @@ type PCIAddress struct {
 // Returns "" if the address string wasn't a valid PCI address.
 func PCIAddressFromString(address string) *PCIAddress {
 	addrLowered := strings.ToLower(address)
-	matches := RE_PCI_ADDRESS.FindStringSubmatch(addrLowered)
+	matches := regexPCIAddress.FindStringSubmatch(addrLowered)
 	if len(matches) == 6 {
 		dom := "0000"
 		if matches[1] != "" {
@@ -93,10 +164,13 @@ func PCIAddressFromString(address string) *PCIAddress {
 	return nil
 }
 
-func PCI() (*PCIInfo, error) {
+func PCI(opts ...*WithOption) (*PCIInfo, error) {
+	mergeOpts := mergeOptions(opts...)
+	ctx := &context{
+		chroot: *mergeOpts.Chroot,
+	}
 	info := &PCIInfo{}
-	err := pciFillInfo(info)
-	if err != nil {
+	if err := ctx.pciFillInfo(info); err != nil {
 		return nil, err
 	}
 	return info, nil

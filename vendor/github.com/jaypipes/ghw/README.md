@@ -1,6 +1,8 @@
 # `ghw` - Golang HardWare discovery/inspection library [![Build Status](https://travis-ci.org/jaypipes/ghw.svg?branch=master)](https://travis-ci.org/jaypipes/ghw)
 
-`ghw` is a small Golang library providing hardware inspection and discovery.
+`ghw` is a small Golang library providing hardware inspection and discovery
+for Linux. There currently exists partial support for MacOSX and Windows
+support is planned for a future release.
 
 ## Design Principles
 
@@ -33,16 +35,51 @@ information about the host computer:
 * [Network](#network)
 * [PCI](#pci)
 * [GPU](#gpu)
+* [YAML and JSON serialization](#serialization)
 
-**NOTE**: The default root mountpoint that `ghw` uses when looking for
-information about the host system is `/`. So, for example, when looking up CPU
-information on Linux, `ghw` will attempt to parse the `/proc/cpuinfo` file. If
-you are calling `ghw` from a system that has an alternate root mountpoint, you
-can set the `GHW_CHROOT` environment variable to that alternate path. for
-example, if you are executing from within an application container that has
+### Overriding the root mountpoint `ghw` uses
+
+The default root mountpoint that `ghw` uses when looking for information about
+the host system is `/`. So, for example, when looking up CPU information on a
+Linux system, `ghw.CPU()` will use the path `/proc/cpuinfo`.
+
+If you are calling `ghw` from a system that has an alternate root mountpoint,
+you can either set the `GHW_CHROOT` environment variable to that alternate
+path, or call the module constructor function with the `ghw.WithChroot()`
+modifier.
+
+For example, if you are executing from within an application container that has
 bind-mounted the root host filesystem to the mount point `/host`, you would set
-`GHW_CHROOT` to `/host` so that `ghw` can find files like `/proc/cpuinfo` at
+`GHW_CHROOT` to `/host` so that `ghw` can find `/proc/cpuinfo` at
 `/host/proc/cpuinfo`.
+
+Alternately, you can use the `ghw.WithChroot()` function like so:
+
+```go
+cpu, err := ghw.CPU(ghw.WithChroot("/host"))
+```
+
+### Disabling warning messages
+
+When `ghw` isn't able to retrieve some information, it may print certain
+warning messages to `stderr`. To disable these warnings, simply set the
+`GHW_DISABLE_WARNINGS` environs variable:
+
+```
+$ ghwc memory
+WARNING:
+Could not determine total physical bytes of memory. This may
+be due to the host being a virtual machine or container with no
+/var/log/syslog file, or the current user may not have necessary
+privileges to read the syslog. We are falling back to setting the
+total physical amount of memory to the total usable amount of memory
+memory (24GB physical, 24GB usable)
+```
+
+```
+$ GHW_DISABLE_WARNINGS=1 ghwc memory
+memory (24GB physical, 24GB usable)
+```
 
 ### Memory
 
@@ -74,7 +111,7 @@ func main() {
 		fmt.Printf("Error getting memory info: %v", err)
 	}
 
-	fmt.Println(mem.String())
+	fmt.Println(memory.String())
 }
 ```
 
@@ -93,14 +130,14 @@ information about the CPUs on the host system.
 
 * `ghw.CPUInfo.TotalCores` has the total number of physical cores the host
   system contains
-* `ghw.CPUInfo.TotalCores` has the total number of hardware threads the
+* `ghw.CPUInfo.TotalThreads` has the total number of hardware threads the
   host system contains
 * `ghw.CPUInfo.Processors` is an array of `ghw.Processor` structs, one for each
   physical processor package contained in the host
 
 Each `ghw.Processor` struct contains a number of fields:
 
-* `ghw.Processor.Id` is the physical processor `uint32` ID according to the
+* `ghw.Processor.ID` is the physical processor `uint32` ID according to the
   system
 * `ghw.Processor.NumCores` is the number of physical cores in the processor
   package
@@ -115,7 +152,7 @@ Each `ghw.Processor` struct contains a number of fields:
 
 A `ghw.ProcessorCore` has the following fields:
 
-* `ghw.ProcessorCore.Id` is the `uint32` identifier that the host gave this
+* `ghw.ProcessorCore.ID` is the `uint32` identifier that the host gave this
   core. Note that this does *not* necessarily equate to a zero-based index of
   the core within a physical package. For example, the core IDs for an Intel Core
   i7 are 0, 1, 2, 8, 9, and 10
@@ -215,7 +252,15 @@ Each `ghw.Disk` struct contains the following fields:
 * `ghw.Disk.SizeBytes` contains the amount of storage the disk provides
 * `ghw.Disk.PhysicalBlockSizeBytes` contains the size of the physical blocks
   used on the disk, in bytes
-* `ghw.Disk.BusType` will be either "scsi" or "ide"
+* `ghw.Disk.DriveType` is the type of drive. It is of type `ghw.DriveType`
+  which has a `ghw.DriveType.String()` method that can be called to return a
+  string representation of the bus. This string will be "HDD", "FDD", "ODD",
+  or "SSD", which correspond to a hard disk drive (rotational), floppy drive,
+  optical (CD/DVD) drive and solid-state drive.
+* `ghw.Disk.StorageController` is the type of storage controller/drive. It is
+  of type `ghw.StorageController` which has a `ghw.StorageController.String()`
+  method that can be called to return a string representation of the bus. This
+  string will be "SCSI", "IDE", "virtio", or "NVMe"
 * `ghw.Disk.NUMANodeID` is the numeric index of the NUMA node this disk is
   local to, or -1
 * `ghw.Disk.Vendor` contains a string with the name of the hardware vendor for
@@ -272,7 +317,7 @@ Example output from my personal workstation:
 
 ```
 block storage (1 disk, 2TB physical storage)
- /dev/sda (2TB) [SCSI]  LSI - SN #3600508e000000000f8253aac9a1abd0c
+ /dev/sda HDD (2TB) SCSI [@pci-0000:04:00.0-scsi-0:1:0:0 (node #0)] vendor=LSI model=Logical_Volume serial=600508e000000000f8253aac9a1abd0c WWN=0x600508e000000000f8253aac9a1abd0c
   /dev/sda1 (100MB)
   /dev/sda2 (187GB)
   /dev/sda3 (449MB)
@@ -297,7 +342,7 @@ The `ghw.TopologyInfo` struct contains two fields:
 
 Each `ghw.TopologyNode` struct contains the following fields:
 
-* `ghw.TopologyNode.Id` is the system's `uint32` identifier for the node
+* `ghw.TopologyNode.ID` is the system's `uint32` identifier for the node
 * `ghw.TopologyNode.Cores` is an array of pointers to `ghw.ProcessorCore` structs that
   are contained in this node
 * `ghw.TopologyNode.Caches` is an array of pointers to `ghw.MemoryCache` structs that
@@ -388,36 +433,105 @@ Each `ghw.NIC` struct contains the following fields:
 * `ghw.NIC.MacAddress` is the MAC address for the NIC, if any
 * `ghw.NIC.IsVirtual` is a boolean indicating if the NIC is a virtualized
   device
+* `ghw.NIC.Capabilities` is an array of pointers to `ghw.NICCapability` structs
+  that can describe the things the NIC supports. These capabilities match the
+  returned values from the `ethtool -k <DEVICE>` call on Linux
+
+The `ghw.NICCapability` struct contains the following fields:
+
+* `ghw.NICCapability.Name` is the string name of the capability (e.g.
+  "tcp-segmentation-offload")
+* `ghw.NICCapability.IsEnabled` is a boolean indicating whether the capability
+  is currently enabled/active on the NIC
+* `ghw.NICCapability.CanEnable` is a boolean indicating whether the capability
+  may be enabled
 
 ```go
 package main
 
 import (
-	"fmt"
+    "fmt"
 
-	"github.com/jaypipes/ghw"
+    "github.com/jaypipes/ghw"
 )
 
 func main() {
-	net, err := ghw.Network()
-	if err != nil {
-		fmt.Printf("Error getting network info: %v", err)
-	}
+    net, err := ghw.Network()
+    if err != nil {
+        fmt.Printf("Error getting network info: %v", err)
+    }
 
-	fmt.Printf("%v\n", net)
+    fmt.Printf("%v\n", net)
 
-	for _, nic := range net.NICs {
-		fmt.Printf(" %v\n", nic)
-	}
+    for _, nic := range net.NICs {
+        fmt.Printf(" %v\n", nic)
+
+        enabledCaps := make([]int, 0)
+        for x, cap := range nic.Capabilities {
+            if cap.IsEnabled {
+                enabledCaps = append(enabledCaps, x)
+            }
+        }
+        if len(enabledCaps) > 0 {
+            fmt.Printf("  enabled capabilities:\n")
+            for _, x := range enabledCaps {
+                fmt.Printf("   - %s\n", nic.Capabilities[x].Name)
+            }
+        }
+    }
 }
 ```
 
-Example output from my personal workstation:
+Example output from my personal laptop:
 
 ```
-net (2 NICs)
- enp0s25
- wls1
+net (3 NICs)
+ docker0
+  enabled capabilities:
+   - tx-checksumming
+   - tx-checksum-ip-generic
+   - scatter-gather
+   - tx-scatter-gather
+   - tx-scatter-gather-fraglist
+   - tcp-segmentation-offload
+   - tx-tcp-segmentation
+   - tx-tcp-ecn-segmentation
+   - tx-tcp-mangleid-segmentation
+   - tx-tcp6-segmentation
+   - udp-fragmentation-offload
+   - generic-segmentation-offload
+   - generic-receive-offload
+   - tx-vlan-offload
+   - highdma
+   - tx-lockless
+   - netns-local
+   - tx-gso-robust
+   - tx-fcoe-segmentation
+   - tx-gre-segmentation
+   - tx-gre-csum-segmentation
+   - tx-ipxip4-segmentation
+   - tx-ipxip6-segmentation
+   - tx-udp_tnl-segmentation
+   - tx-udp_tnl-csum-segmentation
+   - tx-gso-partial
+   - tx-sctp-segmentation
+   - tx-esp-segmentation
+   - tx-vlan-stag-hw-insert
+ enp58s0f1
+  enabled capabilities:
+   - rx-checksumming
+   - generic-receive-offload
+   - rx-vlan-offload
+   - tx-vlan-offload
+   - highdma
+ wlp59s0
+  enabled capabilities:
+   - scatter-gather
+   - tx-scatter-gather
+   - generic-segmentation-offload
+   - generic-receive-offload
+   - highdma
+   - netns-local
 ```
 
 ### PCI
@@ -436,13 +550,13 @@ The `ghw.PCI()` function returns a `ghw.PCIInfo` struct. The `ghw.PCIInfo`
 struct contains a number of fields that may be queried for PCI information:
 
 * `ghw.PCIInfo.Classes` is a map, keyed by the PCI class ID (a hex-encoded
-  string) of pointers to `pcidb.PCIClass` structs, one for each class of PCI
+  string) of pointers to `pcidb.Class` structs, one for each class of PCI
   device known to `ghw`
 * `ghw.PCIInfo.Vendors` is a map, keyed by the PCI vendor ID (a hex-encoded
-  string) of pointers to `pcidb.PCIVendor` structs, one for each PCI vendor
+  string) of pointers to `pcidb.Vendor` structs, one for each PCI vendor
   known to `ghw`
 * `ghw.PCIInfo.Products` is a map, keyed by the PCI product ID* (a hex-encoded
-  string) of pointers to `pcidb.PCIProduct` structs, one for each PCI product
+  string) of pointers to `pcidb.Product` structs, one for each PCI product
   known to `ghw`
 
 **NOTE**: PCI products are often referred to by their "device ID". We use
@@ -461,18 +575,18 @@ This methods return either an array of or a single pointer to a `ghw.PCIDevice`
 struct, which has the following fields:
 
 
-* `ghw.PCIDevice.Vendor` is a pointer to a `pcidb.PCIVendor` struct that
+* `ghw.PCIDevice.Vendor` is a pointer to a `pcidb.Vendor` struct that
   describes the device's primary vendor. This will always be non-nil.
-* `ghw.PCIDevice.Product` is a pointer to a `pcidb.PCIProduct` struct that
+* `ghw.PCIDevice.Product` is a pointer to a `pcidb.Product` struct that
   describes the device's primary product. This will always be non-nil.
-* `ghw.PCIDevice.Subsystem` is a pointer to a `pcidb.PCIProduct` struct that
+* `ghw.PCIDevice.Subsystem` is a pointer to a `pcidb.Product` struct that
   describes the device's secondary/sub-product. This will always be non-nil.
-* `ghw.PCIDevice.Class` is a pointer to a `pcidb.PCIClass` struct that
+* `ghw.PCIDevice.Class` is a pointer to a `pcidb.Class` struct that
   describes the device's class. This will always be non-nil.
-* `ghw.PCIDevice.Subclass` is a pointer to a `pcidb.PCISubclass` struct
+* `ghw.PCIDevice.Subclass` is a pointer to a `pcidb.Subclass` struct
   that describes the device's subclass. This will always be non-nil.
 * `ghw.PCIDevice.ProgrammingInterface` is a pointer to a
-  `pcidb.PCIProgrammingInterface` struct that describes the device subclass'
+  `pcidb.ProgrammingInterface` struct that describes the device subclass'
   programming interface. This will always be non-nil.
 
 The following code snippet shows how to call the `ghw.PCIInfo.ListDevices()`
@@ -612,22 +726,22 @@ func main() {
 	}
 
 	vendor := deviceInfo.Vendor
-	fmt.Printf("Vendor: %s [%s]\n", vendor.Name, vendor.Id)
+	fmt.Printf("Vendor: %s [%s]\n", vendor.Name, vendor.ID)
 	product := deviceInfo.Product
-	fmt.Printf("Product: %s [%s]\n", product.Name, product.Id)
+	fmt.Printf("Product: %s [%s]\n", product.Name, product.ID)
 	subsystem := deviceInfo.Subsystem
-	subvendor := pci.Vendors[subsystem.VendorId]
+	subvendor := pci.Vendors[subsystem.VendorID]
 	subvendorName := "UNKNOWN"
 	if subvendor != nil {
 		subvendorName = subvendor.Name
 	}
-	fmt.Printf("Subsystem: %s [%s] (Subvendor: %s)\n", subsystem.Name, subsystem.Id, subvendorName)
+	fmt.Printf("Subsystem: %s [%s] (Subvendor: %s)\n", subsystem.Name, subsystem.ID, subvendorName)
 	class := deviceInfo.Class
-	fmt.Printf("Class: %s [%s]\n", class.Name, class.Id)
+	fmt.Printf("Class: %s [%s]\n", class.Name, class.ID)
 	subclass := deviceInfo.Subclass
-	fmt.Printf("Subclass: %s [%s]\n", subclass.Name, subclass.Id)
+	fmt.Printf("Subclass: %s [%s]\n", subclass.Name, subclass.ID)
 	progIface := deviceInfo.ProgrammingInterface
-	fmt.Printf("Programming Interface: %s [%s]\n", progIface.Name, progIface.Id)
+	fmt.Printf("Programming Interface: %s [%s]\n", progIface.Name, progIface.ID)
 }
 ```
 
@@ -663,9 +777,9 @@ Each `ghw.GraphicsCard` struct contains the following fields:
 * `ghw.GraphicsCard.DeviceInfo` is a pointer to a `ghw.PCIDevice` struct
   describing the graphics card. This may be `nil` if no PCI device information
   could be determined for the card.
-* `ghw.GraphicsCard.Nodes` is an array of pointers to `ghw.TopologyNode`
-  structs, one for each NUMA node that the GPU/graphics card is affined to. On
-  non-NUMA systems, this will always be an empty array.
+* `ghw.GraphicsCard.Node` is an pointer to a `ghw.TopologyNode` struct that the
+  GPU/graphics card is affined to. On non-NUMA systems, this will always be
+  `nil`.
 
 ```go
 package main
@@ -677,7 +791,7 @@ import (
 )
 
 func main() {
-	gpu, err := ghw.GPU())
+	gpu, err := ghw.GPU()
 	if err != nil {
 		fmt.Printf("Error getting GPU info: %v", err)
 	}
@@ -705,6 +819,48 @@ information
 `ghw.TopologyNode` struct if you'd like to dig deeper into the NUMA/topology
 subsystem
 
+## Serialization
+
+All of the `ghw` `XXXInfo` structs -- e.g. `ghw.CPUInfo` -- have two methods
+for producing a serialized JSON or YAML string representation of the contained
+information:
+
+* `JSONString()` returns a string containing the information serialized into
+  JSON. It accepts a single boolean parameter indicating whether to use
+  indentation when outputting the string
+* `YAMLString()` returns a string containing the information serialized into
+  YAML
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/jaypipes/ghw"
+)
+
+func main() {
+	mem, err := ghw.Memory()
+	if err != nil {
+		fmt.Printf("Error getting memory info: %v", err)
+	}
+
+	fmt.Printf("%s", mem.YAMLString())
+}
+```
+
+the above example code prints the following out on my local workstation:
+
+```
+memory:
+  supported_page_sizes:
+  - 1073741824
+  - 2097152
+  total_physical_bytes: 25263415296
+  total_usable_bytes: 25263415296
+```
+
 ## Developers
 
 Contributions to `ghw` are welcomed! Fork the repo on GitHub and submit a pull
@@ -722,7 +878,7 @@ You can run unit tests easily using the `make test` command, like so:
 
 ```
 [jaypipes@uberbox ghw]$ make test
-go test github.com/jaypipes/ghw github.com/jaypipes/ghw/ghwc
+go test github.com/jaypipes/ghw github.com/jaypipes/ghw/cmd/ghwc
 ok      github.com/jaypipes/ghw 0.084s
-?       github.com/jaypipes/ghw/ghwc    [no test files]
+?       github.com/jaypipes/ghw/cmd/ghwc    [no test files]
 ```
