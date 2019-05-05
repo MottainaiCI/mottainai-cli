@@ -54,7 +54,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:da1b5268079eff2c5d8d88dbdea8434e23c25e153859e5d9b9f83b477a13b0c8"
+  digest = "1:ee01cb227a53bade343f099af5191917a037267f7ba4f97c97ae5b31b0c0ea2c"
   name = "github.com/MottainaiCI/mottainai-server"
   packages = [
     "pkg/client",
@@ -72,7 +72,7 @@
     "routes/schema/v1",
   ]
   pruneopts = "UT"
-  revision = "ef15bd74ddedaf3eb570369a96cd3011bb870148"
+  revision = "be885df2818fecbf86348ae2279505feb403f067"
 
 [[projects]]
   branch = "master"
