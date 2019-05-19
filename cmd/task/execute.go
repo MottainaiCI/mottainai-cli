@@ -25,6 +25,8 @@ import (
 	"io"
 	"log"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
+
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
@@ -53,9 +55,9 @@ func newTaskExecuteCommand(config *setting.Config) *cobra.Command {
 			var t citasks.Task
 
 			var err error
-			req := client.Request{
+			req := schema.Request{
 				Route: v1.Schema.GetTaskRoute("as_json"),
-				Interpolations: map[string]string{
+				Options: map[string]interface{}{
 					":id": id,
 				},
 			}

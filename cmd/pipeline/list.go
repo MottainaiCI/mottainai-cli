@@ -25,6 +25,8 @@ import (
 	"os"
 	"sort"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
+
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
@@ -49,7 +51,7 @@ func newPipelineListCommand(config *setting.Config) *cobra.Command {
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
-			req := client.Request{
+			req := schema.Request{
 				Route:  v1.Schema.GetTaskRoute("pipeline_list"),
 				Target: &tlist,
 			}

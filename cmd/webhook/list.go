@@ -29,6 +29,7 @@ import (
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	webhook "github.com/MottainaiCI/mottainai-server/pkg/webhook"
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
 	"github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	tablewriter "github.com/olekukonko/tablewriter"
 	cobra "github.com/spf13/cobra"
@@ -49,7 +50,7 @@ func newWebHookListCommand(config *setting.Config) *cobra.Command {
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
-			req := client.Request{
+			req := schema.Request{
 				Route:  v1.Schema.GetWebHookRoute("show_all"),
 				Target: &tlist,
 			}
@@ -70,20 +71,20 @@ func newWebHookListCommand(config *setting.Config) *cobra.Command {
 
 			for _, i := range tlist {
 				if !all {
-					task_table = append(task_table, []string{i.ID, i.Key, i.URL, i.Type, i.OwnerId, strconv.FormatBool(i.HasPipeline()), strconv.FormatBool(i.HasTask()), i.Filter})
+					task_table = append(task_table, []string{i.ID, i.Key, i.URL, i.Type, i.OwnerId, strconv.FormatBool(i.HasPipeline()), strconv.FormatBool(i.HasTask()), i.Filter, i.Auth})
 				} else {
 					t, _ := i.ReadTask()
 					p, _ := i.ReadPipeline()
 					tstr := fmt.Sprintf("%#v", t)
 					pstr := fmt.Sprintf("%#v", p)
-					task_table = append(task_table, []string{i.ID, i.Key, i.URL, i.Type, i.OwnerId, pstr, tstr, i.Filter})
+					task_table = append(task_table, []string{i.ID, i.Key, i.URL, i.Type, i.OwnerId, pstr, tstr, i.Filter, i.Auth})
 				}
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 			table.SetCenterSeparator("|")
-			table.SetHeader([]string{"ID", "Key", "URL", "Type", "Owner", "Pipeline", "Task", "Filter"})
+			table.SetHeader([]string{"ID", "Key", "URL", "Type", "Owner", "Pipeline", "Task", "Filter", "Auth"})
 
 			for _, v := range task_table {
 				table.Append(v)

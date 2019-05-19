@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"log"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
 	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
@@ -50,9 +51,9 @@ func newNodeShowCommand(config *setting.Config) *cobra.Command {
 			if len(id) == 0 {
 				log.Fatalln("You need to define a node id")
 			}
-			req := client.Request{
+			req := schema.Request{
 				Route: v1.Schema.GetNodeRoute("show"),
-				Interpolations: map[string]string{
+				Options: map[string]interface{}{
 					":id": id,
 				},
 				Target: &n,

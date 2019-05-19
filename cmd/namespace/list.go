@@ -24,6 +24,8 @@ import (
 	"log"
 	"os"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
+
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
@@ -44,7 +46,7 @@ func newNamespaceListCommand(config *setting.Config) *cobra.Command {
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
-			req := client.Request{
+			req := schema.Request{
 				Route:  v1.Schema.GetNamespaceRoute("show_all"),
 				Target: &tlist,
 			}

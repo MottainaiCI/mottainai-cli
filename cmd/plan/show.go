@@ -25,6 +25,8 @@ import (
 	"fmt"
 	"log"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
+
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
@@ -49,9 +51,9 @@ func newPlanShowCommand(config *setting.Config) *cobra.Command {
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
-			req := client.Request{
+			req := schema.Request{
 				Route: v1.Schema.GetTaskRoute("plan_show"),
-				Interpolations: map[string]string{
+				Options: map[string]interface{}{
 					":id": id,
 				},
 				Target: &t,

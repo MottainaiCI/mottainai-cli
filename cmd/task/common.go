@@ -25,6 +25,8 @@ import (
 	"io"
 	"regexp"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
+
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
@@ -47,7 +49,7 @@ func GenerateTasks(c client.HttpClient, dat map[string]interface{}, hostreg stri
 	var n []nodes.Node
 	var q []string
 
-	req := client.Request{
+	req := schema.Request{
 		Route: v1.Schema.GetNodeRoute("show_all"),
 	}
 
@@ -94,9 +96,9 @@ func MonitorTasks(f client.HttpClient, created map[string]bool) {
 			var t citasks.Task
 
 			var err error
-			req := client.Request{
+			req := schema.Request{
 				Route: v1.Schema.GetTaskRoute("as_json"),
-				Interpolations: map[string]string{
+				Options: map[string]interface{}{
 					":id": k,
 				},
 			}

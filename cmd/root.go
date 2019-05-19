@@ -23,6 +23,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+
 	//	"reflect"
 
 	"github.com/spf13/cobra"
@@ -32,6 +33,7 @@ import (
 	pipeline "github.com/MottainaiCI/mottainai-cli/cmd/pipeline"
 	plan "github.com/MottainaiCI/mottainai-cli/cmd/plan"
 	profile "github.com/MottainaiCI/mottainai-cli/cmd/profile"
+	secret "github.com/MottainaiCI/mottainai-cli/cmd/secret"
 	settingcmd "github.com/MottainaiCI/mottainai-cli/cmd/settings"
 	webhookcmd "github.com/MottainaiCI/mottainai-cli/cmd/webhook"
 
@@ -105,6 +107,7 @@ func initCommand(rootCmd *cobra.Command, config *setting.Config) {
 		pipeline.NewPipelineCommand(config),
 		settingcmd.NewSettingCommand(config),
 		webhookcmd.NewWebHookCommand(config),
+		secret.NewSecretCommand(config),
 	)
 }
 

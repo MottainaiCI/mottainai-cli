@@ -25,6 +25,8 @@ import (
 	"log"
 	"os"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
+
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
@@ -46,7 +48,7 @@ func newSettingListCommand(config *setting.Config) *cobra.Command {
 			var v *viper.Viper = config.Viper
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			req := client.Request{
+			req := schema.Request{
 				Route:  v1.Schema.GetSettingRoute("show_all"),
 				Target: &tlist,
 			}

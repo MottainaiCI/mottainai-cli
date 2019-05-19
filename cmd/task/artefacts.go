@@ -24,6 +24,8 @@ import (
 	"fmt"
 	"log"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
+
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
@@ -48,7 +50,7 @@ func newTaskArtefactsCommand(config *setting.Config) *cobra.Command {
 
 			fmt.Println("Artefacts for:", id)
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			req := client.Request{
+			req := schema.Request{
 				Route:  v1.Schema.GetTaskRoute("artefact_list"),
 				Target: &tlist,
 			}

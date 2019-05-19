@@ -26,6 +26,7 @@ import (
 	"log"
 
 	user "github.com/MottainaiCI/mottainai-server/pkg/user"
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
 	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -54,9 +55,9 @@ func newUserShowCommand(config *setting.Config) *cobra.Command {
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
 			var t *user.User
-			req := client.Request{
+			req := schema.Request{
 				Route: v1.Schema.GetUserRoute("show"),
-				Interpolations: map[string]string{
+				Options: map[string]interface{}{
 					":id": id,
 				},
 				Target: &t,

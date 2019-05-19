@@ -18,52 +18,47 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-package storage
+package secret
 
 import (
 	"log"
 
-	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
-
+	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
-	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
 )
 
-func newStorageShowCommand(config *setting.Config) *cobra.Command {
+func newSecretEditCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "show <storage-id> [OPTIONS]",
-		Short: "Show artefacts belonging to a storage",
-		Args:  cobra.RangeArgs(1, 1),
+		Use:   "edit <id> <key> <value>",
+		Short: "Edit a secret",
+		//Args:  cobra.OnlyValidArgs,
+
+		Args: cobra.RangeArgs(3, 3),
+		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
-			var tlist []string
+			var err error
 			var v *viper.Viper = config.Viper
 
-			storage := args[0]
-			if len(storage) == 0 {
-				log.Fatalln("You need to define a storage id")
-			}
+			id := args[0]
+			key := args[1]
+			value := args[2]
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
+			dat := make(map[string]interface{})
 
-			req := schema.Request{
-				Route:  v1.Schema.GetStorageRoute("show_artefacts"),
-				Target: &tlist,
-				Options: map[string]interface{}{
-					":id": storage,
-				},
+			if len(args) != 3 {
+				log.Fatalln("You need to define a secret id and a key and a value to update")
 			}
+			dat["key"] = key
+			dat["value"] = value
+			dat["id"] = id
 
-			err := fetcher.Handle(req)
-			if err != nil {
-				log.Fatalln("error:", err)
-			}
-
-			for _, i := range tlist {
-				log.Println("- " + i)
-			}
+			res, err := fetcher.SecretEdit(dat)
+			tools.CheckError(err)
+			tools.PrintResponse(res)
 		},
 	}
 

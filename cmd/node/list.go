@@ -24,6 +24,8 @@ import (
 	"log"
 	"os"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
+
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	nodes "github.com/MottainaiCI/mottainai-server/pkg/nodes"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
@@ -45,7 +47,7 @@ func newNodeListCommand(config *setting.Config) *cobra.Command {
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
-			req := client.Request{
+			req := schema.Request{
 				Route:  v1.Schema.GetNodeRoute("show_all"),
 				Target: &n,
 			}

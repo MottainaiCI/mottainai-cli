@@ -24,6 +24,7 @@ import (
 	"log"
 	"os"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
 	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -45,7 +46,7 @@ func newStorageListCommand(config *setting.Config) *cobra.Command {
 			var v *viper.Viper = config.Viper
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			req := client.Request{
+			req := schema.Request{
 				Route:  v1.Schema.GetStorageRoute("show_all"),
 				Target: &n,
 			}

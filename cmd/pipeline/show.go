@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"log"
 
+	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
 	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -50,9 +51,9 @@ func newPipelineShowCommand(config *setting.Config) *cobra.Command {
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 
-			req := client.Request{
+			req := schema.Request{
 				Route: v1.Schema.GetTaskRoute("pipeline_show"),
-				Interpolations: map[string]string{
+				Options: map[string]interface{}{
 					":id": id,
 				},
 				Target: &t,
