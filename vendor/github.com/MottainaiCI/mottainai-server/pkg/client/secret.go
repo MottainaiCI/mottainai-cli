@@ -25,10 +25,10 @@ import (
 	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 )
 
-func (f *Fetcher) StorageDelete(id string) (event.APIResponse, error) {
+func (f *Fetcher) SecretDelete(id string) (event.APIResponse, error) {
 
 	req := schema.Request{
-		Route: v1.Schema.GetStorageRoute("delete"),
+		Route: v1.Schema.GetSecretRoute("delete"),
 		Options: map[string]interface{}{
 			":id": id,
 		},
@@ -37,23 +37,20 @@ func (f *Fetcher) StorageDelete(id string) (event.APIResponse, error) {
 	return f.HandleAPIResponse(req)
 }
 
-func (f *Fetcher) StorageRemovePath(id, path string) (event.APIResponse, error) {
+func (f *Fetcher) SecretEdit(data map[string]interface{}) (event.APIResponse, error) {
 
 	req := schema.Request{
-		Route: v1.Schema.GetStorageRoute("remove_path"),
-		Options: map[string]interface{}{
-			":id":   id,
-			":path": path,
-		},
+		Route:   v1.Schema.GetSecretRoute("set_field"),
+		Options: data,
 	}
 
 	return f.HandleAPIResponse(req)
 }
 
-func (f *Fetcher) StorageCreate(t string) (event.APIResponse, error) {
+func (f *Fetcher) SecretCreate(t string) (event.APIResponse, error) {
 
 	req := schema.Request{
-		Route: v1.Schema.GetStorageRoute("create"),
+		Route: v1.Schema.GetSecretRoute("create"),
 		Options: map[string]interface{}{
 			":name": t,
 		},

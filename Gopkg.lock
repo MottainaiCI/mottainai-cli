@@ -54,13 +54,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ee01cb227a53bade343f099af5191917a037267f7ba4f97c97ae5b31b0c0ea2c"
+  digest = "1:cc613b21a3895554fd37359c4023e6efb60398b78f1a490746e7e339f912a13d"
   name = "github.com/MottainaiCI/mottainai-server"
   packages = [
     "pkg/client",
     "pkg/event",
     "pkg/namespace",
     "pkg/nodes",
+    "pkg/secret",
     "pkg/settings",
     "pkg/storage",
     "pkg/tasks",
@@ -72,7 +73,7 @@
     "routes/schema/v1",
   ]
   pruneopts = "UT"
-  revision = "be885df2818fecbf86348ae2279505feb403f067"
+  revision = "af3bdc829fc675469f278fbd2fe7fd030086f08c"
 
 [[projects]]
   branch = "master"
@@ -1495,6 +1496,7 @@
     "github.com/MottainaiCI/mottainai-server/pkg/event",
     "github.com/MottainaiCI/mottainai-server/pkg/namespace",
     "github.com/MottainaiCI/mottainai-server/pkg/nodes",
+    "github.com/MottainaiCI/mottainai-server/pkg/secret",
     "github.com/MottainaiCI/mottainai-server/pkg/settings",
     "github.com/MottainaiCI/mottainai-server/pkg/storage",
     "github.com/MottainaiCI/mottainai-server/pkg/tasks",
@@ -1502,6 +1504,7 @@
     "github.com/MottainaiCI/mottainai-server/pkg/user",
     "github.com/MottainaiCI/mottainai-server/pkg/utils",
     "github.com/MottainaiCI/mottainai-server/pkg/webhook",
+    "github.com/MottainaiCI/mottainai-server/routes/schema",
     "github.com/MottainaiCI/mottainai-server/routes/schema/v1",
     "github.com/RichardKnop/logging",
     "github.com/RichardKnop/machinery/v1",

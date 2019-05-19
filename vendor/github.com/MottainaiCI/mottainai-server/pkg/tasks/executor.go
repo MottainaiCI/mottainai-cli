@@ -34,12 +34,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MottainaiCI/mottainai-server/pkg/client"
+	"github.com/MottainaiCI/mottainai-server/pkg/secret"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
+	"github.com/MottainaiCI/mottainai-server/pkg/utils"
+	"github.com/MottainaiCI/mottainai-server/routes/schema"
+	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
+
+	"golang.org/x/crypto/ssh"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
-
-	"github.com/MottainaiCI/mottainai-server/pkg/client"
-	"github.com/MottainaiCI/mottainai-server/pkg/utils"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
+	ssh2 "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
 
 const ABORT_EXECUTION_ERROR = "Aborting execution"
@@ -255,11 +261,55 @@ func (d *TaskExecutor) Setup(docID string) error {
 		if err := os.Mkdir(d.Context.SourceDir, os.ModePerm); err != nil {
 			return err
 		}
-		// TODO: This should go in a go routine and wait for ending
-		r, err := git.PlainClone(d.Context.SourceDir, false, &git.CloneOptions{
+		opts := &git.CloneOptions{
 			URL:      task_info.Source,
 			Progress: d,
-		})
+		}
+
+		if task_info.PrivKey != "" {
+
+			auth := task_info.PrivKey
+			var s secret.Secret
+			req := schema.Request{
+				Route:   v1.Schema.GetSecretRoute("show"),
+				Target:  &s,
+				Options: map[string]interface{}{"id": task_info.PrivKey},
+			}
+			err := fetcher.Handle(req)
+
+			if err == nil && s.Secret != "" {
+				auth = s.Secret
+			} else {
+				req := schema.Request{
+					Route:   v1.Schema.GetSecretRoute("show_by_name"),
+					Target:  &s,
+					Options: map[string]interface{}{"name": task_info.PrivKey},
+				}
+				err := fetcher.Handle(req)
+				if err == nil && s.Secret != "" {
+					auth = s.Secret
+				}
+			}
+
+			if strings.HasPrefix(auth, "auth:") {
+				a := strings.TrimPrefix(auth, "auth:")
+				data := strings.Split(a, ":")
+				if len(data) != 2 {
+					return errors.New("Invalid credentials")
+				}
+				opts.Auth = &http.BasicAuth{Username: data[0], Password: data[1]}
+
+			} else {
+				signer, err := ssh.ParsePrivateKey([]byte(auth))
+				if err != nil {
+					return err
+				}
+				sshAuth := &ssh2.PublicKeys{User: "git", Signer: signer}
+				opts.Auth = sshAuth
+			}
+		}
+		// TODO: This should go in a go routine and wait for ending
+		r, err := git.PlainClone(d.Context.SourceDir, false, opts)
 		if err != nil {
 			return err
 		}
