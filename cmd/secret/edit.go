@@ -21,7 +21,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package secret
 
 import (
+	"io/ioutil"
 	"log"
+	"os"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -32,26 +34,41 @@ import (
 
 func newSecretEditCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "edit <id> <key> <value>",
+		Use:   "edit <id> <key> [<value>|-f file]",
 		Short: "Edit a secret",
-		//Args:  cobra.OnlyValidArgs,
+		Args:  cobra.RangeArgs(2, 3),
 
-		Args: cobra.RangeArgs(3, 3),
-		// TODO: PreRun check of minimal args if --json is not present
+		PreRun: func(cmd *cobra.Command, args []string) {
+			if len(args) == 2 && cmd.Flag("from-file").Value.String() == "" {
+				log.Fatalln("Missing value or --from-file option")
+			} else if len(args) < 2 {
+				cmd.Help()
+				os.Exit(0)
+			}
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			var err error
+			var content []byte
 			var v *viper.Viper = config.Viper
+			var value string
 
 			id := args[0]
 			key := args[1]
-			value := args[2]
+
+			if len(args) > 2 {
+				value = args[2]
+			} else {
+				// Read value from file
+				content, err = ioutil.ReadFile(cmd.Flag("from-file").Value.String())
+				if err != nil {
+					log.Fatalln("Error on read file ", err)
+				}
+				value = string(content)
+			}
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			dat := make(map[string]interface{})
 
-			if len(args) != 3 {
-				log.Fatalln("You need to define a secret id and a key and a value to update")
-			}
 			dat["key"] = key
 			dat["value"] = value
 			dat["id"] = id
@@ -61,6 +78,9 @@ func newSecretEditCommand(config *setting.Config) *cobra.Command {
 			tools.PrintResponse(res)
 		},
 	}
+
+	var pflags = cmd.PersistentFlags()
+	pflags.StringP("from-file", "f", "", "Read value from file.")
 
 	return cmd
 }
