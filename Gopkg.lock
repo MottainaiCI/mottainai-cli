@@ -73,7 +73,7 @@
     "routes/schema/v1",
   ]
   pruneopts = "UT"
-  revision = "f0ba6c64af618b2446ffb2be945f8867e52e8dc4"
+  revision = "a81ef793563a22e3988d188ce8b771aefdf08f61"
 
 [[projects]]
   branch = "master"
