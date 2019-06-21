@@ -23,7 +23,6 @@ package profile
 import (
 	"fmt"
 	"os"
-	"os/user"
 	path "path/filepath"
 
 	common "github.com/MottainaiCI/mottainai-cli/common"
@@ -83,9 +82,8 @@ func newProfileCreateCommand(config *setting.Config) *cobra.Command {
 				f = v.ConfigFileUsed()
 			} else {
 
-				user, _ := user.Current()
 				f = fmt.Sprintf("%s/%s/%s.yml",
-					user.HomeDir,
+					common.GetHomeDir(),
 					common.MCLI_HOME_PATH,
 					common.MCLI_CONFIG_NAME)
 

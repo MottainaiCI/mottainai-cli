@@ -76,7 +76,8 @@ func initConfig(config *setting.Config) {
 
 	// Set Config paths list
 	config.Viper.AddConfigPath(common.MCLI_LOCAL_PATH)
-	config.Viper.AddConfigPath(fmt.Sprintf("$HOME/%s", common.MCLI_HOME_PATH))
+	config.Viper.AddConfigPath(
+		fmt.Sprintf("%s/%s", common.GetHomeDir(), common.MCLI_HOME_PATH))
 
 	config.Viper.SetTypeByDefaultValue(true)
 }
