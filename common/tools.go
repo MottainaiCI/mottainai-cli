@@ -20,6 +20,8 @@ package common
 
 import (
 	"fmt"
+	"os"
+	"os/user"
 	"strings"
 
 	event "github.com/MottainaiCI/mottainai-server/pkg/event"
@@ -40,6 +42,15 @@ func CheckError(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func GetHomeDir() string {
+	u, _ := user.Current()
+	ans := u.HomeDir
+	if os.Getenv("HOME") != "" {
+		ans = os.Getenv("HOME")
+	}
+	return ans
 }
 
 func PrintResponse(resp event.APIResponse) {
