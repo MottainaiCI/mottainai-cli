@@ -31,6 +31,8 @@ import (
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
 	setting "github.com/MottainaiCI/mottainai-server/pkg/settings"
 	citasks "github.com/MottainaiCI/mottainai-server/pkg/tasks"
+	manager "github.com/MottainaiCI/mottainai-server/pkg/tasks/manager"
+
 	v1 "github.com/MottainaiCI/mottainai-server/routes/schema/v1"
 	cobra "github.com/spf13/cobra"
 	viper "github.com/spf13/viper"
@@ -68,7 +70,7 @@ func newTaskExecuteCommand(config *setting.Config) *cobra.Command {
 			var fn func(string) (int, error)
 
 			config.GetWeb().AppURL = v.GetString("master")
-			fn = citasks.DefaultTaskHandler(config).Handler(t.Type)
+			fn = manager.DefaultTaskHandler(config).Handler(t.Type)
 			fn(id)
 		},
 	}
