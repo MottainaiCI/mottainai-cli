@@ -47,6 +47,7 @@ func NewTaskCommand(config *setting.Config) *cobra.Command {
 		newTaskStopCommand(config),
 		newTaskMonitorCommand(config),
 		//newTaskPlayCommand(),
+		newCompileCommand(config),
 	)
 
 	return cmd
