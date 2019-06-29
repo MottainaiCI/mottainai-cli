@@ -118,7 +118,7 @@ func (c *Cursor) Next(ctx context.Context) bool {
 	}
 }
 
-// Decode will decode the current document into val. If val is nil or is a typed nil, an error will be returned.
+// Decode will decode the current document into val.
 func (c *Cursor) Decode(val interface{}) error {
 	return bson.UnmarshalWithRegistry(c.registry, c.Current, val)
 }

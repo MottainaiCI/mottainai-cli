@@ -27,7 +27,7 @@ variables can be used:
   [default]     {{usage_default .}}
   [required]    {{usage_required .}}{{end}}
 `
-	// DefaultTableFormat constant to use to display usage in a tabular format
+	// DefaultTableFormat constant to use to display usage in a tabluar format
 	DefaultTableFormat = `This application is configured via the environment. The following environment
 variables can be used:
 
@@ -37,10 +37,9 @@ KEY	TYPE	DEFAULT	REQUIRED	DESCRIPTION
 )
 
 var (
-	decoderType           = reflect.TypeOf((*Decoder)(nil)).Elem()
-	setterType            = reflect.TypeOf((*Setter)(nil)).Elem()
-	textUnmarshalerType   = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
-	binaryUnmarshalerType = reflect.TypeOf((*encoding.BinaryUnmarshaler)(nil)).Elem()
+	decoderType     = reflect.TypeOf((*Decoder)(nil)).Elem()
+	setterType      = reflect.TypeOf((*Setter)(nil)).Elem()
+	unmarshalerType = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
 )
 
 func implementsInterface(t reflect.Type) bool {
@@ -48,19 +47,14 @@ func implementsInterface(t reflect.Type) bool {
 		reflect.PtrTo(t).Implements(decoderType) ||
 		t.Implements(setterType) ||
 		reflect.PtrTo(t).Implements(setterType) ||
-		t.Implements(textUnmarshalerType) ||
-		reflect.PtrTo(t).Implements(textUnmarshalerType) ||
-		t.Implements(binaryUnmarshalerType) ||
-		reflect.PtrTo(t).Implements(binaryUnmarshalerType)
+		t.Implements(unmarshalerType) ||
+		reflect.PtrTo(t).Implements(unmarshalerType)
 }
 
 // toTypeDescription converts Go types into a human readable description
 func toTypeDescription(t reflect.Type) string {
 	switch t.Kind() {
 	case reflect.Array, reflect.Slice:
-		if t.Elem().Kind() == reflect.Uint8 {
-			return "String"
-		}
 		return fmt.Sprintf("Comma-separated list of %s", toTypeDescription(t.Elem()))
 	case reflect.Map:
 		return fmt.Sprintf(
@@ -109,7 +103,7 @@ func toTypeDescription(t reflect.Type) string {
 	return fmt.Sprintf("%+v", t)
 }
 
-// Usage writes usage information to stdout using the default header and table format
+// Usage writes usage information to stderr using the default header and table format
 func Usage(prefix string, spec interface{}) error {
 	// The default is to output the usage information as a table
 	// Create tabwriter instance to support table output

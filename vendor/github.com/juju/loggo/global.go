@@ -66,15 +66,20 @@ func RemoveWriter(name string) (Writer, error) {
 	return defaultContext.RemoveWriter(name)
 }
 
-// ConfigureLoggers configures loggers on the default context according to the
-// given string specification, which specifies a set of modules and their
-// associated logging levels.  Loggers are colon- or semicolon-separated; each
-// module is specified as <modulename>=<level>.  White space outside of module
-// names and levels is ignored.  The root module is specified with the name
-// "<root>".
+// ConfigureLoggers configures loggers according to the given string
+// specification, which specifies a set of modules and their associated
+// logging levels.  Loggers are colon- or semicolon-separated; each
+// module is specified as <modulename>=<level>.  White space outside of
+// module names and levels is ignored.  The root module is specified
+// with the name "<root>".
 //
 // An example specification:
-//  `<root>=ERROR; foo.bar=WARNING`
+//	`<root>=ERROR; foo.bar=WARNING`
 func ConfigureLoggers(specification string) error {
-	return defaultContext.ConfigureLoggers(specification)
+	config, err := ParseConfigString(specification)
+	if err != nil {
+		return err
+	}
+	defaultContext.ApplyConfig(config)
+	return nil
 }

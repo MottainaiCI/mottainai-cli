@@ -113,13 +113,7 @@ func Find(
 		cmd.Opts = append(cmd.Opts, hintElem)
 	}
 	if fo.Limit != nil {
-		limit := *fo.Limit
-		if limit < 0 {
-			cmd.Opts = append(cmd.Opts, bsonx.Elem{"singleBatch", bsonx.Boolean(true)})
-			limit = -1 * limit
-		}
-
-		cmd.Opts = append(cmd.Opts, bsonx.Elem{"limit", bsonx.Int64(limit)})
+		cmd.Opts = append(cmd.Opts, bsonx.Elem{"limit", bsonx.Int64(*fo.Limit)})
 	}
 	if fo.Max != nil {
 		maxElem, err := interfaceToElement("max", fo.Max, registry)
