@@ -24,10 +24,39 @@
 #   go-tests = true
 #   unused-packages = true
 
-
 [[constraint]]
-  branch = "master"
-  name = "github.com/MottainaiCI/mottainai-server"
+   name = "github.com/MottainaiCI/mottainai-server"
+   branch = "master"
+
+[[override]]
+  source = "https://github.com/fsnotify/fsnotify/archive/v1.4.7.tar.gz"
+  name = "gopkg.in/fsnotify.v1"
+
+[[override]]
+  name = "k8s.io/cli-runtime"
+  branch = "release-1.14"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  version = "v1.4-2-g300106c228d52c"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  branch = "release-1.14"
+
+[[override]]
+  name = "k8s.io/kubernetes"
+  branch = "release-1.14"
+
+
+[[override]]
+   name = "gopkg.in/ini.v1"
+   version = "v1.38.1"
+
+[[override]]
+  name = "github.com/RichardKnop/machinery"
+  version = "v1.5.5"
+
 [[override]]
   branch = "master"
   name = "github.com/fsouza/go-dockerclient"
@@ -44,10 +73,16 @@
   branch = "master"
   name = "github.com/docker/libnetwork"
 
+[[override]]
+  name = "github.com/Unknwon/com"
+  branch = "master"
+
 [prune]
   go-tests = true
   unused-packages = true
+  #non-go = true
 
 [[prune.project]]
 name = "github.com/lxc/lxd"
 unused-packages = false
+#non-go = false
