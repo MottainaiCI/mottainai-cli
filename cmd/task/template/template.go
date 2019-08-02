@@ -38,10 +38,9 @@ func (tem *Template) DrawFromFile(file string) (string, error) {
 	}
 	return tem.Draw(string(dat))
 }
-func (tem *Template) AppendValue(k, v string) {
+func (tem *Template) AppendValue(k string, v interface{}) {
 	if _, ok := tem.Values[k]; !ok {
 		tem.Values[k] = v
-
 	}
 }
 func (tem *Template) LoadValuesFromFile(file string) error {
@@ -72,8 +71,8 @@ func (tem *Template) LoadValues(raw string) error {
 	return nil
 }
 
-func (tem *Template) ReadValues(raw string) (map[string]map[string]string, error) {
-	m := make(map[string]map[string]string)
+func (tem *Template) ReadValues(raw string) (map[string]map[string]interface{}, error) {
+	m := make(map[string]map[string]interface{})
 
 	err := yaml.Unmarshal([]byte(raw), &m)
 	if err != nil {
