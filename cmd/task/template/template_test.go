@@ -55,7 +55,26 @@ values:
 				t := New()
 				err := t.LoadValues(raw)
 				Expect(err).ToNot(HaveOccurred())
-				Expect(t.Values["image"]).To(Equal("1"))
+				Expect(t.Values["image"]).To(Equal(1))
+			})
+		})
+	})
+
+	Describe("LoadArray", func() {
+		Context("Load array values", func() {
+			It("renders a specfile", func() {
+				raw := `
+values:
+  images:
+    - "image1"
+    - "image2"
+
+`
+
+				t := New()
+				err := t.LoadValues(raw)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(t.Values["images"]).To(Equal([]interface{}{"image1", "image2"}))
 			})
 		})
 	})
