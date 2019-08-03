@@ -32,7 +32,6 @@ type ExecutorContext struct {
 	ArtefactDir, StorageDir, NamespaceDir                          string
 	BuildDir, SourceDir, RootTaskDir, RealRootDir, TaskRelativeDir string
 	DocID                                                          string
-	TargetArtefactDir, TargetStorageDir                            string
 	StandardOutput                                                 bool
 }
 
@@ -91,8 +90,6 @@ func (ctx *ExecutorContext) Report(d Executor) {
 	d.Report("Context StorageDir: " + ctx.StorageDir)
 	d.Report("Context ArtefactDir: " + ctx.ArtefactDir)
 	d.Report("Context NamespaceDir: " + ctx.NamespaceDir)
-	d.Report("Context TargetStorageDir: " + ctx.TargetStorageDir)
-	d.Report("Context TargetArtefactDir: " + ctx.TargetArtefactDir)
 }
 
 // ResolveTaskArtefacts given an ArtefactMapping to relative directories and an instruction as input, returns a mapping relative to the host directories used
@@ -122,9 +119,6 @@ func (ctx *ExecutorContext) ResolveArtefactsMounts(m ArtefactMapping, i Instruct
 	i.AddMount(artefactdir + ":" + ctx.ContainerPath(artefact_path))
 	i.AddMount(storagedir + ":" + ctx.ContainerPath(storage_path))
 
-	ctx.TargetArtefactDir = ctx.ContainerPath(artefact_path)
-	ctx.TargetStorageDir = ctx.ContainerPath(storage_path)
-
 	return ArtefactMapping{ArtefactPath: artefactdir, StoragePath: storagedir}
 }
 
@@ -144,9 +138,6 @@ func (ctx *ExecutorContext) ResolveArtefacts(m ArtefactMapping) ArtefactMapping 
 
 	artefactdir = ctx.ContainerPath(artefact_path)
 	storagedir = ctx.ContainerPath(storage_path)
-
-	ctx.TargetArtefactDir = ctx.ContainerPath(artefact_path)
-	ctx.TargetStorageDir = ctx.ContainerPath(storage_path)
 
 	return ArtefactMapping{ArtefactPath: artefactdir, StoragePath: storagedir}
 }
