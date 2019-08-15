@@ -20,6 +20,8 @@ import (
 	"errors"
 	"io/ioutil"
 	"reflect"
+	"sort"
+	"strings"
 	"text/template"
 
 	"gopkg.in/yaml.v2"
@@ -129,6 +131,19 @@ func (tem *Template) Draw(raw string) (string, error) {
 			default:
 				return false
 			}
+		},
+		"replaceAll": strings.ReplaceAll,
+		"join":       strings.Join,
+		"sort": func(a []string) []string {
+			sort.Strings(a)
+			return a
+		},
+		"getKeys": func(m map[interface{}]interface{}) []string {
+			var ans []string
+			for k, _ := range m {
+				ans = append(ans, k.(string))
+			}
+			return ans
 		},
 	}
 	t := template.New("spec").Funcs(tf)
