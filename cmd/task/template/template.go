@@ -18,6 +18,7 @@ package template
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"reflect"
 	"sort"
@@ -134,6 +135,13 @@ func (tem *Template) Draw(raw string) (string, error) {
 		},
 		"replaceAll": strings.ReplaceAll,
 		"join":       strings.Join,
+		"joinWithPrefix": func(a []string, sep, prefix string) string {
+			var ans []string
+			for _, elem := range a {
+				ans = append(ans, fmt.Sprintf("%s%s", prefix, elem))
+			}
+			return strings.Join(ans, sep)
+		},
 		"sort": func(a []string) []string {
 			sort.Strings(a)
 			return a
