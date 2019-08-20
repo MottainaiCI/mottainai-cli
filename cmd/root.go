@@ -23,8 +23,7 @@ package cmd
 import (
 	"fmt"
 	"os"
-
-	//	"reflect"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -37,6 +36,7 @@ import (
 	settingcmd "github.com/MottainaiCI/mottainai-cli/cmd/settings"
 	webhookcmd "github.com/MottainaiCI/mottainai-cli/cmd/webhook"
 
+	debug "github.com/MottainaiCI/mottainai-cli/cmd/debug"
 	simulate "github.com/MottainaiCI/mottainai-cli/cmd/simulate"
 	storage "github.com/MottainaiCI/mottainai-cli/cmd/storage"
 	task "github.com/MottainaiCI/mottainai-cli/cmd/task"
@@ -49,11 +49,6 @@ import (
 )
 
 const (
-	cliName = `Mottainai CLI
-Copyright (c) 2017-2018 Mottainai
-
-Command line interface for Mottainai clusters`
-
 	cliExamples = `$> mottainai-cli -m http://127.0.0.1:8080 task create --json task.json
 
 $> mottainai-cli -m http://127.0.0.1:8080 namespace list
@@ -79,6 +74,9 @@ func initConfig(config *setting.Config) {
 	config.Viper.AddConfigPath(
 		fmt.Sprintf("%s/%s", common.GetHomeDir(), common.MCLI_HOME_PATH))
 
+	// Create EnvKey Replacer for handle complex structure
+	replacer := strings.NewReplacer(".", "__")
+	config.Viper.SetEnvKeyReplacer(replacer)
 	config.Viper.SetTypeByDefaultValue(true)
 }
 
@@ -109,6 +107,7 @@ func initCommand(rootCmd *cobra.Command, config *setting.Config) {
 		settingcmd.NewSettingCommand(config),
 		webhookcmd.NewWebHookCommand(config),
 		secret.NewSecretCommand(config),
+		debug.NewDebugCommand(config),
 	)
 }
 
@@ -119,7 +118,7 @@ func Execute() {
 	initConfig(config)
 
 	var rootCmd = &cobra.Command{
-		Short:        cliName,
+		Short:        common.MCLI_HEADER,
 		Version:      setting.MOTTAINAI_VERSION,
 		Example:      cliExamples,
 		Args:         cobra.OnlyValidArgs,
