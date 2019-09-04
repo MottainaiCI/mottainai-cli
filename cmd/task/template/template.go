@@ -153,6 +153,13 @@ func (tem *Template) Draw(raw string) (string, error) {
 			}
 			return ans
 		},
+		"cast2StringArray": func(a []interface{}) []string {
+			var ans []string
+			for _, v := range a {
+				ans = append(ans, v.(string))
+			}
+			return ans
+		},
 	}
 	t := template.New("spec").Funcs(tf)
 	tt, err := t.Parse(raw)
