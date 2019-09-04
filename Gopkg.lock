@@ -37,6 +37,30 @@
   revision = "e9091a26100e9cfb2b6a8f470085bfa541931a91"
 
 [[projects]]
+  digest = "1:3b10c6fd33854dc41de2cf78b7bae105da94c2789b6fa5b9ac9e593ea43484ac"
+  name = "github.com/Masterminds/goutils"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "41ac8693c5c10a92ea1ff5ac3a7f95646f6123b0"
+  version = "v1.1.0"
+
+[[projects]]
+  digest = "1:55388fd080150b9a072912f97b1f5891eb0b50df43401f8b75fb4273d3fec9fc"
+  name = "github.com/Masterminds/semver"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
+  version = "v1.4.2"
+
+[[projects]]
+  digest = "1:ab506cfc00b11d6d406789c15abb0b341e8db076640e3f5255615a7e327398c1"
+  name = "github.com/Masterminds/sprig"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "258b00ffa7318e8b109a141349980ffbd30a35db"
+  version = "v2.20.0"
+
+[[projects]]
   digest = "1:f9ae348e1f793dcf9ed930ed47136a67343dbd6809c5c91391322267f4476892"
   name = "github.com/Microsoft/go-winio"
   packages = ["."]
@@ -118,7 +142,7 @@
   revision = "b1d5d44c82d6c9fb6c8e8dad28412163586fd8ac"
 
 [[projects]]
-  digest = "1:0aa59c076b119c021011cfb5975c5701cfeb0420208e5208266a751f96803d76"
+  digest = "1:363fe929adf129cef4f1399035ee8d48ae740ed6b6389858076378afad151899"
   name = "github.com/RichardKnop/machinery"
   packages = [
     "v1",
@@ -128,6 +152,7 @@
     "v1/backends/iface",
     "v1/backends/memcache",
     "v1/backends/mongo",
+    "v1/backends/null",
     "v1/backends/redis",
     "v1/backends/result",
     "v1/brokers/amqp",
@@ -145,8 +170,8 @@
     "v1/tracing",
   ]
   pruneopts = "UT"
-  revision = "07418869e268a380aea5b9aefbb0b9f5bb715a12"
-  version = "v1.6.2"
+  revision = "1bd3be901751563f6ba6de122f6ffc997fd903aa"
+  version = "v1.6.8"
 
 [[projects]]
   digest = "1:3ec1b34a4c161eee98ba2530ed7bee201ad57705d4c8e1d8c4bf27b58ce1e728"
@@ -621,6 +646,14 @@
   pruneopts = "UT"
   revision = "a30252cb686a21eb2d0b98132633053ec2f7f1e5"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:f9a5e090336881be43cfc1cf468330c1bdd60abdc9dd194e0b1ab69f4b94dd7c"
+  name = "github.com/huandu/xstrings"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f02667b379e2fb5916c3cda2cf31e0eb885d79f8"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -2014,6 +2047,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Masterminds/sprig",
     "github.com/MottainaiCI/mottainai-server/pkg/client",
     "github.com/MottainaiCI/mottainai-server/pkg/event",
     "github.com/MottainaiCI/mottainai-server/pkg/nodes",
