@@ -89,7 +89,7 @@ func newProfileCreateCommand(config *setting.Config) *cobra.Command {
 
 				// Create directory where save file if doesn't exists
 				if _, err := os.Stat(path.Dir(f)); os.IsNotExist(err) {
-					err = os.Mkdir(path.Dir(f), 0760)
+					err = os.MkdirAll(path.Dir(f), 0760)
 					tools.CheckError(err)
 				}
 			}
