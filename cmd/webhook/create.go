@@ -22,6 +22,7 @@ package webhook
 
 import (
 	"log"
+	"os"
 
 	tools "github.com/MottainaiCI/mottainai-cli/common"
 	client "github.com/MottainaiCI/mottainai-server/pkg/client"
@@ -32,22 +33,27 @@ import (
 
 func newWebHookCreateCommand(config *setting.Config) *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "create [OPTIONS]",
+		Use:   "create webhooktype [OPTIONS]",
 		Short: "Create a new webhook",
-		Args:  cobra.RangeArgs(1, 1),
+		Args:  cobra.RangeArgs(0, 1),
 		// TODO: PreRun check of minimal args if --json is not present
 		Run: func(cmd *cobra.Command, args []string) {
-			var err error
 			var v *viper.Viper = config.Viper
 
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
-			webtype := args[0]
-			if len(webtype) == 0 {
-				log.Fatalln("You need to define a webhook type, e.g. github")
+			if len(args) == 0 {
+				log.Fatalln("You need to define a webhook type: github|gitlab")
 			}
+			webtype := args[0]
 			res, err := fetcher.WebHookCreate(webtype)
-			tools.CheckError(err)
 			tools.PrintResponse(res)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			if len(res.Error) > 0 {
+				os.Exit(1)
+			}
 		},
 	}
 
