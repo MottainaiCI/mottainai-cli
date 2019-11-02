@@ -142,6 +142,13 @@ func (tem *Template) Draw(raw string) (string, error) {
 		}
 		return strings.Join(ans, sep)
 	}
+	tf["joinWithPrefixAndPostfix"] = func(a []string, sep, prefix, postfix string) string {
+		var ans []string
+		for _, elem := range a {
+			ans = append(ans, fmt.Sprintf("%s%s%s", prefix, elem, postfix))
+		}
+		return strings.Join(ans, sep)
+	}
 	tf["sort"] = func(a []string) []string {
 		sort.Strings(a)
 		return a
