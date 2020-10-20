@@ -86,3 +86,7 @@
 name = "github.com/lxc/lxd"
 unused-packages = false
 #non-go = false
+
+[[constraint]]
+  name = "github.com/Masterminds/sprig"
+  version = "2.22.0"
