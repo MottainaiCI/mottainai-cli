@@ -30,6 +30,8 @@ import (
 )
 
 func newNamespaceDownloadCommand(config *setting.Config) *cobra.Command {
+	var filters []string
+
 	var cmd = &cobra.Command{
 		Use:   "download <namespace> <target> [OPTIONS]",
 		Short: "Download namespace artefacts",
@@ -45,11 +47,13 @@ func newNamespaceDownloadCommand(config *setting.Config) *cobra.Command {
 				log.Fatalln("You need to define a namespace and a target")
 			}
 
-			if err := fetcher.DownloadArtefactsFromNamespace(ns, target); err != nil {
+			if err := fetcher.DownloadArtefactsFromNamespace(ns, target, filters); err != nil {
 				log.Fatalln(err)
 			}
 		},
 	}
 
+	cmd.Flags().StringArrayVarP(&filters, "filter", "f", []string{},
+		"Define regex rule for filter artefacts to download.")
 	return cmd
 }

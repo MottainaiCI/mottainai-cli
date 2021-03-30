@@ -30,6 +30,8 @@ import (
 )
 
 func newTaskDownloadCommand(config *setting.Config) *cobra.Command {
+	var filters []string
+
 	var cmd = &cobra.Command{
 		Use:   "download <taskid> <target> [OPTIONS]",
 		Short: "Download task artefacts",
@@ -42,14 +44,15 @@ func newTaskDownloadCommand(config *setting.Config) *cobra.Command {
 			if len(id) == 0 || len(target) == 0 {
 				log.Fatalln("You need to define a task id and a target")
 			}
-
 			fetcher := client.NewTokenClient(v.GetString("master"), v.GetString("apikey"), config)
 			fetcher.SetActiveReport(true)
-			if err := fetcher.DownloadArtefactsFromTask(id, target); err != nil {
+			if err := fetcher.DownloadArtefactsFromTask(id, target, filters); err != nil {
 				log.Fatalln(err)
 			}
 		},
 	}
 
+	cmd.Flags().StringArrayVarP(&filters, "filter", "f", []string{},
+		"Define regex rule for filter artefacts to download.")
 	return cmd
 }

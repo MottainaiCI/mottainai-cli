@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"os"
 
 	event "github.com/MottainaiCI/mottainai-server/pkg/event"
 
@@ -115,6 +116,9 @@ func newWebHookUpdateCommand(config *setting.Config) *cobra.Command {
 			tools.CheckError(err)
 
 			tools.PrintResponse(res)
+			if len(res.Error) > 0 {
+				os.Exit(1)
+			}
 		},
 	}
 

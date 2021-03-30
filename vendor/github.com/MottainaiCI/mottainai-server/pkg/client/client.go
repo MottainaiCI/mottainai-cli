@@ -53,8 +53,8 @@ type HttpClient interface {
 
 	GetTask() ([]byte, error)
 	AbortTask()
-	DownloadArtefactsFromTask(string, string) error
-	DownloadArtefactsFromNamespace(string, string) error
+	DownloadArtefactsFromTask(string, string, []string) error
+	DownloadArtefactsFromNamespace(string, string, []string) error
 	DownloadArtefactsFromStorage(string, string) error
 	UploadFile(string, string) error
 	FailTask(string)
@@ -130,7 +130,7 @@ type HttpClient interface {
 	NamespaceFileList(namespace string) ([]string, error)
 	StorageFileList(storage string) ([]string, error)
 	TaskFileList(task string) ([]string, error)
-	DownloadArtefactsGeneric(id, target, artefact_type string) error
+	DownloadArtefactsGeneric(id, target, artefact_type string, filters []string) error
 	Download(url, where string) (bool, error)
 
 	SecretDelete(id string) (event.APIResponse, error)
@@ -277,7 +277,15 @@ func (f *Fetcher) HandleRaw(req schema.Request, fn func(io.ReadCloser) error) er
 
 func (f *Fetcher) Handle(req schema.Request) error {
 	return f.HandleRaw(req, func(b io.ReadCloser) error {
-		return json.NewDecoder(b).Decode(req.Target)
+		buf := new(bytes.Buffer)
+		n, err := buf.ReadFrom(b)
+		if n == 0 {
+			return errors.New("Received empty response from server")
+		} else if err != nil {
+			return err
+		}
+
+		return json.Unmarshal(buf.Bytes(), req.Target)
 	})
 }
 

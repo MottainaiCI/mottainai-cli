@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"time"
 
 	schema "github.com/MottainaiCI/mottainai-server/routes/schema"
 
@@ -73,13 +74,14 @@ func newPipelineListCommand(config *setting.Config) *cobra.Command {
 			}
 
 			for _, i := range tlist {
-				task_table = append(task_table, []string{i.ID, i.Name})
+				t, _ := time.Parse("20060102150405", i.CreatedTime)
+				task_table = append(task_table, []string{i.ID, i.Name, t.String()})
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 			table.SetCenterSeparator("|")
-			table.SetHeader([]string{"ID", "Name"})
+			table.SetHeader([]string{"ID", "Name", "Created"})
 
 			for _, v := range task_table {
 				table.Append(v)

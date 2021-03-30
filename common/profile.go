@@ -29,6 +29,10 @@ const (
 	// NOTE: doesn't use $HOME because os.Mkdir doesn't resolve it.
 	MCLI_HOME_PATH  = ".config/mottainai"
 	MCLI_LOCAL_PATH = ".mottainai"
+	MCLI_HEADER     = `Mottainai CLI
+Copyright (c) 2017-2019 Mottainai
+
+Command line interface for Mottainai clusters`
 )
 
 // NOTE: For viper unmarshal it is needed that

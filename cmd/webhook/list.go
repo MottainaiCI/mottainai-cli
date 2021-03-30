@@ -71,20 +71,20 @@ func newWebHookListCommand(config *setting.Config) *cobra.Command {
 
 			for _, i := range tlist {
 				if !all {
-					task_table = append(task_table, []string{i.ID, i.Key, i.URL, i.Type, i.OwnerId, strconv.FormatBool(i.HasPipeline()), strconv.FormatBool(i.HasTask()), i.Filter, i.Auth})
+					task_table = append(task_table, []string{i.ID, i.Name, i.Key, i.URL, i.Type, i.OwnerId, strconv.FormatBool(i.HasPipeline()), strconv.FormatBool(i.HasTask()), i.Filter, i.Auth})
 				} else {
 					t, _ := i.ReadTask()
 					p, _ := i.ReadPipeline()
 					tstr := fmt.Sprintf("%#v", t)
 					pstr := fmt.Sprintf("%#v", p)
-					task_table = append(task_table, []string{i.ID, i.Key, i.URL, i.Type, i.OwnerId, pstr, tstr, i.Filter, i.Auth})
+					task_table = append(task_table, []string{i.ID, i.Name, i.Key, i.URL, i.Type, i.OwnerId, pstr, tstr, i.Filter, i.Auth})
 				}
 			}
 
 			table := tablewriter.NewWriter(os.Stdout)
 			table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 			table.SetCenterSeparator("|")
-			table.SetHeader([]string{"ID", "Key", "URL", "Type", "Owner", "Pipeline", "Task", "Filter", "Auth"})
+			table.SetHeader([]string{"ID", "Name", "Key", "URL", "Type", "Owner", "Pipeline", "Task", "Filter", "Auth"})
 
 			for _, v := range task_table {
 				table.Append(v)

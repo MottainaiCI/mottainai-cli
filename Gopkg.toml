@@ -55,7 +55,7 @@
 
 [[override]]
   name = "github.com/RichardKnop/machinery"
-  version = "v1.5.5"
+  version = "v1.6.5"
 
 [[override]]
   branch = "master"
@@ -86,3 +86,7 @@
 name = "github.com/lxc/lxd"
 unused-packages = false
 #non-go = false
+
+[[constraint]]
+  name = "github.com/Masterminds/sprig"
+  version = "2.22.0"
